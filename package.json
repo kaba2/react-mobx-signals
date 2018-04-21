@@ -1,0 +1,30 @@
+{
+  "name": "testreact4",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@types/three": "^0.91.10",
+    "mobx": "^4.1.1",
+    "mobx-react": "^5.0.0",
+    "precond": "^0.2.3",
+    "react": "^16.3.1",
+    "react-dom": "^16.3.1",
+    "react-scripts-ts": "2.14.0",
+    "three": "^0.92.0",
+    "typed-signals": "^1.0.2"
+  },
+  "scripts": {
+    "start": "react-scripts-ts start",
+    "build": "react-scripts-ts build",
+    "test": "react-scripts-ts test --env=jsdom",
+    "eject": "react-scripts-ts eject"
+  },
+  "devDependencies": {
+    "@types/jest": "^22.2.3",
+    "@types/node": "^9.6.4",
+    "@types/precond": "^0.2.28",
+    "@types/react": "^16.3.9",
+    "@types/react-dom": "^16.0.5",
+    "typescript": "^2.8.1"
+  }
+}
