@@ -2,8 +2,10 @@
 
 import {observable} from 'mobx';
 
-export function dependsOn<T extends Function>(x : Signal<T>) {
-	return x.mobx;
+export function dependsOn(...signals : {mobx: {}}[]) {
+    for (const signal of signals) {
+        signal.mobx;
+    }
 }
 
 /**

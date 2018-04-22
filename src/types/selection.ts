@@ -16,12 +16,12 @@ export default class Selection {
 	public readonly edgesCleared = new Signal<() => void>();
 
 	public* vertices(): IterableIterator<Vertex> {
-		this.dependsOnChanges();
+		this.dependsOnVertexChanges();
 		yield* this._vertices.keys();
 	}
 
 	public* edges(): IterableIterator<Edge> {
-		this.dependsOnChanges();
+		this.dependsOnEdgeChanges();
 		yield* this._edges.values();
 	}
 
