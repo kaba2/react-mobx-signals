@@ -6,16 +6,15 @@ This is an example Typescript project demonstrating how to combine `React`, `Mob
 TL;DR
 -----
 
-Objects in a traditional object-oriented design communicate automatically with each other by signals at valid states after state changes. Emitting a signal updates a `MobX`-observable stored in that signal, which in turn causes `React` to automatically update the user-interface.
+Objects in a traditional object-oriented design communicate automatically with each other by signals at valid states after state changes. Emitting a signal updates a `MobX`-observable stored in that signal, which in turn causes `React` to automatically update the user-interface. 
 
 What it does
 ------------
 
-The example project is a program for drawing graphs, consisting of vertices and edges. The program has two tools: the drawing tool and the selection tool. The first allows to add edges to the graph, while the latter allows to select a subset of vertices and edges and remove that selection-set. The program provides reactive views to the graph data, showing the set of the vertices and edges in the graph and in the selection. The program demonstrates that
+The example project is a program for drawing graphs, consisting of vertices and edges. The program has two tools: the drawing tool and the selection tool. The first allows to add edges to the graph, while the latter allows to select a subset of vertices and edges and remove that selection-set. The program provides reactive views to the graph data, showing the set of the vertices and edges in the graph and in the selection. The program demonstrates that:
 
-* The user-interface reacts automatically to changes in state represented by a traditional object-oriented design.
 * The objects communicate with each other automatically after state-changes, so that for example when an edge is removed from the graph, it is also removed from the selection.
-* Achieving this does not require much more than specifying useful signals for the objects, and then connecting those signals in a useful manner; there is minimal boilerplate.
+* The user-interface reacts automatically to changes in state represented by a traditional object-oriented design.
 
 Installation
 ------------
