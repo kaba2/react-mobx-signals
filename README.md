@@ -3,8 +3,13 @@ React, MobX and signals and slots
 
 This is an example project demonstrating how to combine `React`, `MobX` and `typed-signals` (signals and slots) libraries to enable object-oriented state management combined with a reactive user interface.
 
-Example program
----------------
+TL;DR
+-----
+
+Objects communicate with each other by signals at valid and relevant states after state changes. Emitting a signal updates a ` MobX`-observable stored in that signal, which in turn causes `React` to update user-interface reactively.
+
+What it does
+------------
 
 The example project is a program for drawing graphs, consisting of vertices and edges. The program has two tools: the drawing tool and the selection tool. The first allows to add edges to the graph, while the latter allows to select a subset of vertices and edges and remove that selection-set. The program provides reactive views to the graph data, showing the set of the vertices and edges in the graph and in the selection. The program demonstrates that
 
