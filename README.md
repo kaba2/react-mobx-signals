@@ -1,12 +1,12 @@
 React, MobX and signals and slots
 =================================
 
-This is an example Typescript project demonstrating how to combine `React`, `MobX` and `typed-signals` (signals and slots) libraries to enable object-oriented state management combined with a reactive user interface.
+This is an example Typescript project demonstrating how to combine `React`, `MobX` and signals and slots to enable object-oriented state management combined with a reactive user interface.
 
 TL;DR
 -----
 
-Objects in a traditional object-oriented design communicate automatically with each other by signals at valid and relevant states after state changes. Emitting a signal updates a `MobX`-observable stored in that signal, which in turn causes `React` to automatically update the user-interface.
+Objects in a traditional object-oriented design communicate automatically with each other by signals at valid states after state changes. Emitting a signal updates a `MobX`-observable stored in that signal, which in turn causes `React` to automatically update the user-interface.
 
 What it does
 ------------
@@ -40,7 +40,7 @@ An object must be able to control _when_ its state-changes are communicated outs
 
 ### Definitions
 
-A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance.
+A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance. In this demonstration we use the `typed-signals` library. However, the same principles hold for any signals and slots library.
 
 ```typescript
 const slot = () => {console.log('Hello, world!')};
@@ -164,12 +164,14 @@ The `MobX` library is connected with `React` in the following minimal way:
 	}
 	```
 
-These changes achieve the goal of notifying the `React` component whenever a `MobX` observable is changed. The last thing to do is to connect `MobX` observables with signals and slots.
+These changes achieve the goal of notifying the `React` component whenever a `MobX` observable is changed. The last thing to do is to connect signals and slots with `MobX`.
 
-Connecting `typed-signals` with `MobX`
---------------------------------------
+Connecting signals and slots with `MobX`
+----------------------------------------
 
-The `typed-signals` library is an implementation of signals and slots for Typescript. `typed-signals`, as well as any signals and slots library, can be combined with the `MobX` library by specifying that each emit of a signal also updates a `MobX` observable stored in the signal. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
+### Notifying MobX of changes
+
+Any signals and slots library can be connected with the `MobX` library by specifying that each emit of a signal also updates a `MobX` observable stored in the signal. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
 
 * Add a new import in `Signal.ts`:
 
@@ -189,11 +191,36 @@ The `typed-signals` library is an implementation of signals and slots for Typesc
     this.mobx = {}
 	```
 
-These changes achieve the goal of notifying `MobX` whenever a signal is emitted. Ideally, we would never see `MobX` observables again in our code; signals are the interface for state-change-communication between objects at valid and relevant states.
+These changes achieve the goal of notifying `MobX` whenever a signal is emitted. 
+
+### Specifying dependencies
+
+Finally, we need a way to specify that the return value of a member function of an object is dependent on whether a given signal has been emitted since the last time. For that, we use the following helper function:
+
+```typescript
+function dependsOn(...signals : {mobx: {}}[]) {
+    for (const signal of signals) {
+        signal.mobx;
+    }
+}
+```
+
+This function reads each `mobx` property of the signals that are given to it. Because of the `@observable` decorator,  `MobX` detects this as a read-access for the `MobX`-observable of the signal. This is how it is used in the `Selection` class for a function which provides us the set of vertices in the selection:
+
+```typescript
+public* vertices(): IterableIterator<Vertex> {
+	dependsOn(this.vertexAdded, this.vertexRemoved);
+	yield* this._vertices.keys();
+}
+```
+
+### Just signals
+
+To summarize, a state change by a mutating member function `F` is notified to `MobX` (and other objects) by emitting a signal from `F`, and the effect of signals to the result of a non-mutating function `G` is specified to `MobX` by listing the affecting signals in `G`. 
 
 Summary
 -------
 
-This demonstration shows how to combine `React`, `MobX` and `typed-signals` (signals and slots) into a modern application supporting a reactive user-interface and communication between objects while remaining object-oriented and keeping the boilerplate to a minimum.
+This demonstration shows how to combine `React`, `MobX` and signals and slots into a modern application supporting a reactive user-interface and communication between objects while remaining object-oriented and keeping the boilerplate to a minimum.
 
 
