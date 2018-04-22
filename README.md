@@ -39,7 +39,7 @@ An object must be able to control _when_ its state-changes are communicated outs
 
 ### Definitions
 
-A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new connection with slot `B` to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance. 
+A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new connection with slot `B` to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A signal can also be disabled and enabled as a unit. A connection can be given a _priority_, which decides the order in which the connections are called on emittance. 
 
 ```typescript
 const slot = () => {console.log('Hello, world!')};

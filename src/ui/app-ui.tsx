@@ -67,7 +67,7 @@ class AppUi extends React.Component<AppProps, AppState> {
 		return (
 			<div className="App" onKeyPress={event => this.onKeyPress(event)}>
 				<h1>Graph paint</h1>
-				<p>This is a program to demonstrate how to combine React, MobX and typed-signals (signals and slots) for object oriented state-synchronization and a reactive interface.</p>
+				<p>This is a program to demonstrate how to combine React, MobX and signals and slots for object oriented state-synchronization and a reactive interface.</p>
 				<p>Draw tool: left-click + drag to draw edges. Start from or end to a vertex to share it.</p>
 				<p>Selection tool: hover to highlight, left-click to reset selection and select, ctrl + left-click to toggle selection .</p>
 				<p>Small key d: remove selected cells.</p>
