@@ -42,6 +42,8 @@ An object must be able to control _when_ its state-changes are communicated outs
 
 A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. 
 
+### Communication
+
 An object communicates its state-changes through its signals which are connected to other objects's member slots. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument. 
 
 ```typescript
