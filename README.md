@@ -191,11 +191,11 @@ Any signals and slots library can be connected with the `MobX` library by specif
     this.mobx = {}
 	```
 
-These changes achieve the goal of notifying `MobX` whenever a signal is emitted. 
+Because of using the `@observable` decorator, `MobX` can detect the access to the `mobx` property in the signal, and interprets a getter-access as reading the observable, and setter-access as writing the observable. The setter-access is triggered by emitting the signal.
 
 ### Specifying dependencies
 
-Finally, we need a way to specify that the return value of a member function of an object is dependent on whether a given signal has been emitted since the last time. For that, we use the following helper function:
+To trigger the getter-access for signal's `mobx` property, we define the following helper function:
 
 ```typescript
 function dependsOn(...signals : {mobx: {}}[]) {
@@ -205,7 +205,7 @@ function dependsOn(...signals : {mobx: {}}[]) {
 }
 ```
 
-This function reads each `mobx` property of the signals that are given to it. Because of the `@observable` decorator,  `MobX` detects this as a read-access for the `MobX`-observable of the signal. This is how it is used in the `Selection` class for a function which provides us the set of vertices in the selection:
+We can then use it in the `Selection` class as follows:
 
 ```typescript
 public* vertices(): IterableIterator<Vertex> {
@@ -213,10 +213,6 @@ public* vertices(): IterableIterator<Vertex> {
 	yield* this._vertices.keys();
 }
 ```
-
-### Just signals
-
-To summarize, a state change by a mutating member function `F` is notified to `MobX` (and other objects) by emitting a signal from `F`, and the effect of signals to the result of a non-mutating function `G` is specified to `MobX` by listing the affecting signals in `G`. 
 
 Summary
 -------
