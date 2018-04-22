@@ -2,7 +2,7 @@ import { Mouse } from 'src/types/mouse';
 import Tool from 'src/tools/tool';
 import {Vector2} from 'three';
 import * as Canvas from 'src/rendering/canvas';
-import { Mesh, MeshCell, MeshVertex } from 'src/types/mesh';
+import { Mesh, MeshCell, Vertex } from 'src/types/mesh';
 import Scene from 'src/types/scene';
 
 export default class DrawTool implements Tool {
@@ -67,14 +67,14 @@ export default class DrawTool implements Tool {
 		this._to = Canvas.canvasCoordinates(mouse);
 
 		let from = this._scene.pick(this._from, 
-			(cell: MeshCell) => cell instanceof MeshVertex) as MeshVertex|undefined;
+			(cell: MeshCell) => cell instanceof Vertex) as Vertex|undefined;
 		if (!from) {
 			from = this._mesh.addVertex();;
 			from.setPosition(this._from);
 		}
 
 		let to = this._scene.pick(this._to, 
-			(cell: MeshCell) => cell instanceof MeshVertex) as MeshVertex|undefined;
+			(cell: MeshCell) => cell instanceof Vertex) as Vertex|undefined;
 		if (!to) {
 			to = this._mesh.addVertex();;
 			to.setPosition(this._to);

@@ -1,5 +1,5 @@
 import * as precond from 'precond';
-import { MeshVertex, MeshEdge, Mesh } from 'src/types/mesh';
+import { Vertex, Edge, Mesh } from 'src/types/mesh';
 import Selection from 'src/types/selection';
 import { renderMesh } from 'src/rendering/rendering';
 import * as Canvas from 'src/rendering/canvas';
@@ -115,13 +115,13 @@ export default class Project {
 	}
 
 
-	private onVertexToBeRemoved = (vertex: MeshVertex) => {
+	private onVertexToBeRemoved = (vertex: Vertex) => {
 		for (const selection of this._selections) {
 			selection.remove(vertex);
 		}
 	}
 
-	private onEdgeToBeRemoved = (edge: MeshEdge) => {
+	private onEdgeToBeRemoved = (edge: Edge) => {
 		for (const selection of this._selections) {
 			selection.remove(edge);
 		}

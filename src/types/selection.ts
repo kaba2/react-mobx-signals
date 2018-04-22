@@ -1,37 +1,37 @@
-import { MeshVertex, MeshEdge, MeshCell } from 'src/types/mesh';
+import { Vertex, Edge, MeshCell } from 'src/types/mesh';
 import {Signal, dependsOn} from 'src/typed-signals/src/Signal';
 import {action} from 'mobx';
 
 export default class Selection {
-	private _vertices = new Set<MeshVertex>();
-	public readonly vertexAdded = new Signal<(vertex: MeshVertex) => void>();
-	public readonly vertexToBeRemoved = new Signal<(vertex: MeshVertex) => void>();
+	private _vertices = new Set<Vertex>();
+	public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
 	public readonly vertexRemoved = new Signal<() => void>();
 	public readonly verticesCleared = new Signal<() => void>();
 	
-	private _edges = new Set<MeshEdge>();
-	public readonly edgeAdded = new Signal<(edge: MeshEdge) => void>();
-	public readonly edgeToBeRemoved = new Signal<(edge: MeshEdge) => void>();
+	private _edges = new Set<Edge>();
+	public readonly edgeAdded = new Signal<(edge: Edge) => void>();
+	public readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
 	public readonly edgeRemoved = new Signal<() => void>();
 	public readonly edgesCleared = new Signal<() => void>();
 
-	public* vertices(): IterableIterator<MeshVertex> {
+	public* vertices(): IterableIterator<Vertex> {
 		this.dependsOnChanges();
 		yield* this._vertices.keys();
 	}
 
-	public* edges(): IterableIterator<MeshEdge> {
+	public* edges(): IterableIterator<Edge> {
 		this.dependsOnChanges();
 		yield* this._edges.values();
 	}
 
 	public add(cell: MeshCell) {
 		console.log('<Selection.add>');
-		if (cell instanceof MeshEdge) {
+		if (cell instanceof Edge) {
 			this._edges.add(cell);
 			cell.setSelected(true);
 			this.edgeAdded.emit(cell);
-		} else if (cell instanceof MeshVertex) {
+		} else if (cell instanceof Vertex) {
 			this._vertices.add(cell);
 			cell.setSelected(true);
 			this.vertexAdded.emit(cell);
@@ -39,13 +39,13 @@ export default class Selection {
 	}
 
 	public remove(cell: MeshCell) {
-		if (cell instanceof MeshEdge) {
+		if (cell instanceof Edge) {
 			console.log('<Selection.remove(Edge)>');
 			this.edgeToBeRemoved.emit(cell);
 			this._edges.delete(cell);
 			cell.setSelected(false);
 			this.edgeRemoved.emit();
-		} else if (cell instanceof MeshVertex) {
+		} else if (cell instanceof Vertex) {
 			console.log('<Selection.remove(Vertex)>');
 			this.vertexToBeRemoved.emit(cell);
 			this._vertices.delete(cell);
@@ -55,10 +55,10 @@ export default class Selection {
 	}
 
 	public has(cell: MeshCell) {
-		if (cell instanceof MeshEdge) {
+		if (cell instanceof Edge) {
 			this.dependsOnEdgeChanges();
 			return this._edges.has(cell);
-		} else  if (cell instanceof MeshVertex) {
+		} else  if (cell instanceof Vertex) {
 			this.dependsOnVertexChanges();
 			return this._vertices.has(cell);
 		}
