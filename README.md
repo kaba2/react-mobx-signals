@@ -235,11 +235,11 @@ With batch updates it is often desirable to replace the communication of many sm
 There are three ways to improve the performance of batch updates:
 1. Implement the batch update using non-emitting operations, such as clearing an internal edge-set, and then emit the corresponding batch-signal. 
 2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals.
-3. Apply the `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
+3. Apply `MobX`'s `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
 ### Polling
 
-It is worth noting that not all properties should be tracked with signals. For example, when the graph contains millions of vertices, then changes to the positions of the vertices should probably not be communicated with signals, but rather with some simple book-keeping ('has the position of any vertex in the graph changed?'), which can be reacted to later in aggregate by repeated polling (such as what happens in an event/render-loop).
+Not all properties should be tracked with signals. For example, when the graph contains millions of vertices, then changes to the positions of the vertices should probably not be communicated with signals, but rather with some simple book-keeping ('has the position of any vertex in the graph changed?'), which can be reacted to later in aggregate by repeated polling --- such as from an event/render-loop.
 
 Summary
 -------
