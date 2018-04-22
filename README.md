@@ -36,15 +36,49 @@ Installation
 Communication between objects
 -----------------------------
 
-An object must be able to control when its state-changes are communicated outside, because only the object knows the instants at which its invariants are satisfied, or when a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. Every time a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid and relevant program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
+An object must be able to control _when_ its state-changes are communicated outside, because only the object knows when its invariants are satisfied, or when a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. Every time a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
 
 ### Signals and slots
 
-A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal `A` is _emitted_ means to call its connections one by one. 
+A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. 
 
 An object communicates its state-changes through its signals which are connected to other objects's member slots. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a collection of elements could emit a signal called `elementAdded(element)` after adding an element into the collection, where the added element is provided as an argument. The signals and slots form the interface by which objects of arbitrary type communicate with each other at well-defined instants; there is no coupling between types.
 
+	```
+	class Selection {
+		private _vertices = new Set<Vertex>();
+		public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
+		...
+		public add(vertex: Vertex) {
+			this._vertices.add(vertex);
+			this.vertexAdded.emit(vertex);
+		}
+		...
+	}
+	```
+
 Who creates the connections? The most typical situation is that each object `A` has a parent object `B` which creates and owns `A`. The parent object `B` connects `A`'s signals to other objects' slots upon creation; and often it is either to `B`'s own private slot or to a slot of `B`'s another child-object. The connections usually remain static through the lifetime of the object `A`, and are disconnected only when `A` is removed from the parent `B`. This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is "destructed": the parent connects and disconnects its children. 
+
+	```` 
+	class Project {
+		private _selection = new Selection();
+		public readonly meshAdded = new Signal<(mesh: Mesh) => void>();
+		private _meshes = new Set<Mesh>();
+		...
+		public addMesh(): Mesh {
+			const mesh = new Mesh();
+			mesh.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
+			this._meshes.add(mesh);
+			this.meshAdded.emit(mesh);
+			return mesh;
+		}
+		...
+		private onVertexToBeRemoved = (vertex: Vertex) => {
+			this._selection.remove(vertex);
+		}
+	}
+	``` 
+
 
 Sometimes there is a need to temporarily _disable_ a connection. This is supported by signal and slots libraries directly; it does not require disconnecting the connection. Each connection can be given a _priority_, which decides the calling order when the signal is emitted.
 
