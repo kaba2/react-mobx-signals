@@ -8,9 +8,9 @@ Signals and slots
 
 An object must be able to control when its state-changes are exposed outside, because only the object knows the instants at which its invariants are satisfied, or when a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. Every time a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid and relevant program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
 
-A _signal_ is an object which stores a set of functions with the same signature. For a given signal, its _slot_ is a function with the same signature as the signal. When a signal stores a slot, we say that the signal is _connected_ to that slot. A signal is _emitted_ by calling its slots one by one. An object A subscribes, or is subscribed, to object B's signal by connecting it to A's slot.
+A _signal_ is an object which stores a set of functions with the same signature. For a given signal, its _slot_ is a function with the same signature as the signal. When a signal stores a slot, we say that the signal is _connected_ to that slot. A signal is _emitted_ by calling its slots one by one. An object `A` subscribes, or is subscribed, to object `B`'s signal by connecting it to `A`'s member slot. 
 
-The type of the state-change of an object is encoded by the memory-address of the signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a collection of elements could emit a signal called `elementAdded(element)` after adding an element into the collection, where the added element is provided as an argument. The signals form the interface by which objects communicate with each other at well-defined instants.
+The type of the state-change of an object is encoded by the memory-address of the signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a collection of elements could emit a signal called `elementAdded(element)` after adding an element into the collection, where the added element is provided as an argument. The signals and slots form the interface by which objects of arbitrary type communicate with each other at well-defined instants; there is no coupling between types.
 
 ### Implementation
 
@@ -41,8 +41,41 @@ The `typed-signals` library is an implementation of signals and slots for Typesc
 
 These changes achieve the goal of notifying `MobX` whenever a signal is emitted. Ideally, we would never see `MobX` observables again in our code; signals are the interface for state-change-communication between objects at valid and relevant states.
 
-Connecting `MobX` with `React`
-------------------------------
+`React`
+-------
+
+`React` is a library which aims at optimal updates of the domain object-model (DOM) tree in a browser. A `React` component corresponds to a node in the DOM tree. Its sole purpose is to rewrite its DOM sub-tree by the component's `render()` method whenever changes to its local state have been detected.
+
+	```
+	import * as React from 'react';
+
+	interface MeshProps {
+		firstName: string;
+		lastName: string;
+	}
+
+	@observer
+	class Greeting extends React.Component<MeshProps, {}> {
+		public render() {
+			return (
+			<div>
+				<p>Hello, {this.props.firstName} {this.props.lastName}!</p>
+			</div>
+			);
+		}
+	}
+	```
+
+A `React` component has two kinds of data. First, _props_ are used to parametrize a component. They are passed to the component from its parent component. In the above example, the 'props' specify the name of the person to greet; the same component can be used to greet any person. Second, _state_ is data that is local to the component. A component uses local state to remember user input. In the above example the component has no local state, which is the most common situation. The local state is often passed, perhaps modified, to the child components as `props`. Since the local state can only be passed downwards in the DOM tree, it only affects the child nodes.
+
+How does the `React` component know when its local state has changed? This is achieved by the convention that the local state must always be changed through the `setState` member function of the component. Because of this convention, `React` can check which `props` were modified by the change to the local state, and optimally rerender only those DOM child-nodes which are affected by the change. The `props` are never modified, because they must remain valid for the sibling components. 
+
+`MobX`
+------
+
+`React` provides a fast way to render the DOM-tree, and update it with response to local state changes in its components. This leaves open the question of how to connect `React` with the rest of the application which consists of the application logic together with application-specific algorithms and data structures. `MobX` provides one piece of the solution for this.
+
+### Connecting `MobX` with `React`
 
 The `MobX` library is connected with `React` in the following minimal way:
 
