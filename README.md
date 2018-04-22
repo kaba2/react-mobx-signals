@@ -15,7 +15,7 @@ The example project is a program for drawing graphs, consisting of vertices and 
 
 * The user-interface reacts automatically to changes in state represented by a traditional object-oriented design.
 * The objects communicate with each other automatically after state-changes, so that for example when an edge is removed from the graph, it is also removed from the selection.
-* Achieving this does not require much more than specifying useful signals for the objects; there is minimal boilerplate.
+* Achieving this does not require much more than specifying useful signals for the objects, and then connecting those signals in a useful manner; there is minimal boilerplate.
 
 Installation
 ------------
