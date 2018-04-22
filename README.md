@@ -6,7 +6,7 @@ This is an example Typescript project demonstrating how to combine `React`, `Mob
 TL;DR
 -----
 
-Objects communicate with each other by signals at valid and relevant states after state changes. Emitting a signal updates a ` MobX`-observable stored in that signal, which in turn causes `React` to update the user-interface reactively.
+Objects in a traditional object-oriented design communicate automatically with each other by signals at valid and relevant states after state changes. Emitting a signal updates a `MobX`-observable stored in that signal, which in turn causes `React` to automatically update the user-interface.
 
 What it does
 ------------
@@ -117,25 +117,25 @@ These changes achieve the goal of notifying `MobX` whenever a signal is emitted.
 
 `React` is a library which aims at optimal updates of the domain object-model (DOM) tree in a browser. A `React` component corresponds to a node in the DOM tree. Its sole purpose is to rewrite its DOM sub-tree by the component's `render()` method whenever changes to its local state have been detected.
 
-	```typescript
-	import * as React from 'react';
+```typescript
+import * as React from 'react';
 
-	interface MeshProps {
-		firstName: string;
-		lastName: string;
-	}
+interface MeshProps {
+	firstName: string;
+	lastName: string;
+}
 
-	@observer
-	class Greeting extends React.Component<MeshProps, {}> {
-		public render() {
-			return (
-			<div>
-				<p>Hello, {this.props.firstName} {this.props.lastName}!</p>
-			</div>
-			);
-		}
+@observer
+class Greeting extends React.Component<MeshProps, {}> {
+	public render() {
+		return (
+		<div>
+			<p>Hello, {this.props.firstName} {this.props.lastName}!</p>
+		</div>
+		);
 	}
-	```
+}
+```
 
 A `React` component has two kinds of data. First, _props_ are used to parametrize a component. They are passed to the component from its parent component. In the above example, the 'props' specify the name of the person to greet; the same component can be used to greet any person. Second, _state_ is data that is local to the component. A component uses local state to remember user input. In the above example the component has no local state, which is the most common situation. The local state is often passed, perhaps modified, to the child components as `props`. Since the local state can only be passed downwards in the DOM tree, it only affects the child nodes.
 
