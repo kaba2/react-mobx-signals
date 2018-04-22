@@ -44,18 +44,18 @@ A _slot_ is a function reference. A _connection_ is an object which stores one s
 
 An object communicates its state-changes through its signals which are connected to other objects's member slots. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a collection of elements could emit a signal called `elementAdded(element)` after adding an element into the collection, where the added element is provided as an argument. The signals and slots form the interface by which objects of arbitrary type communicate with each other at well-defined instants; there is no coupling between types.
 
-	```
-	class Selection {
-		private _vertices = new Set<Vertex>();
-		public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
-		...
-		public add(vertex: Vertex) {
-			this._vertices.add(vertex);
-			this.vertexAdded.emit(vertex);
-		}
-		...
+```typescript
+class Selection {
+	private _vertices = new Set<Vertex>();
+	public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
+	...
+	public add(vertex: Vertex) {
+		this._vertices.add(vertex);
+		this.vertexAdded.emit(vertex);
 	}
-	```
+	...
+}
+```
 
 Who creates the connections? The most typical situation is that each object `A` has a parent object `B` which creates and owns `A`. The parent object `B` connects `A`'s signals to other objects' slots upon creation; and often it is either to `B`'s own private slot or to a slot of `B`'s another child-object. The connections usually remain static through the lifetime of the object `A`, and are disconnected only when `A` is removed from the parent `B`. This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is "destructed": the parent connects and disconnects its children. 
 
@@ -94,19 +94,19 @@ The `typed-signals` library is an implementation of signals and slots for Typesc
 
 * Add a new import in `Signal.ts`:
 
-	```
+	```typescript
 	import {observable} from 'mobx';
 	```
 
 * Add a new `Signal` class member:
 
-	```
+	```typescript
 	@observable public mobx = {};
 	```
 
 * Add a new assignment at the end of `Signal.emitInternal()`:
 
-	```
+	```typescript
     this.mobx = {}
 	```
 
@@ -117,7 +117,7 @@ These changes achieve the goal of notifying `MobX` whenever a signal is emitted.
 
 `React` is a library which aims at optimal updates of the domain object-model (DOM) tree in a browser. A `React` component corresponds to a node in the DOM tree. Its sole purpose is to rewrite its DOM sub-tree by the component's `render()` method whenever changes to its local state have been detected.
 
-	```
+	```typescript
 	import * as React from 'react';
 
 	interface MeshProps {
@@ -152,13 +152,13 @@ The `MobX` library is connected with `React` in the following minimal way:
 
 * Add a new import to a `React` component file:
 	
-	```
+	```typescript
 	import {observer} from 'mobx-react';
 	```
 
 * Decorate the `React` component in that file with `@observer`:
 
-	```
+	```typescript
 	@observer
 	class AppUi extends React.Component<AppProps, AppState> {
 		...
