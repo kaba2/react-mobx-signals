@@ -121,12 +121,14 @@ Implementing the signals and slots mechanism is simple. For example, the source 
 ```typescript
 import * as React from 'react';
 
-interface MeshProps {
+interface GreetingProps {
 	firstName: string;
 	lastName: string;
 }
 
-class Greeting extends React.Component<MeshProps, {}> {
+interface GreetingState {}
+
+class Greeting extends React.Component<GreetingProps, GreetingState> {
 	public render() {
 		return (
 		<div>
@@ -164,19 +166,19 @@ The `MobX` library is connected with `React` in the following minimal way:
 
 	```typescript
 	@observer
-	class Greeting extends React.Component<MeshProps, {}> {
+	class Greeting extends React.Component<GreetingProps, GreetingState> {
 		...
 	}
 	```
 
-These changes achieve the goal of notifying the `React` component whenever a `MobX` observable is changed. The last thing to do is to connect signals and slots with `MobX`.
+After these changes the `React` component is notified whenever a `MobX` observable is changed. The last thing to do is to connect signals and slots with `MobX`.
 
 Connecting signals and slots with `MobX`
 ----------------------------------------
 
 ### Notifying MobX of changes
 
-Any signals and slots library can be connected with the `MobX` library by specifying that each emit of a signal also updates a `MobX` observable stored in the signal. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
+The `MobX` library can be notified of an emitting signal by storing a `MobX`-observable in each signal, and updating that observable whenever a signal is emitted. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
 
 * Add a new import in `Signal.ts`:
 
@@ -196,7 +198,7 @@ Any signals and slots library can be connected with the `MobX` library by specif
     this.mobx = {}
 	```
 
-Because of using the `@observable` decorator, `MobX` can detect the access to the `mobx` property in the signal, and interprets a getter-access as reading the observable, and setter-access as writing the observable. The setter-access is triggered by emitting the signal.
+Because of using the `@observable` decorator, `MobX` can detect the access to the `mobx` property in the signal, and interprets a getter-access as reading the observable, and setter-access as writing the observable. The setter-access is triggered above as a side-effect of emitting the signal.
 
 ### Specifying dependencies
 
@@ -218,6 +220,17 @@ public* vertices(): IterableIterator<Vertex> {
 	yield* this._vertices.keys();
 }
 ```
+
+After adding this dependency-information the user-interface views for the `Selection` class react properly to the changes in selection-state.
+
+### Batch updates
+
+With batch updates it is often desirable to replace the communication of many small related state-changes, such as `edgeRemoved`, with a communication of a single big state-change, such as `allEdgesRemoved`. By default, every emit of a signal causes an immediate communication to other objects and also causes `MobX` to update the relevant `React` components.
+
+There are three ways to improve the performance of batch updates:
+1. Implement the batch update using non-emitting operations, such as clearing an internal edge-set, and then emit the corresponding batch-signal. 
+2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals.
+3. Apply the `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
 Summary
 -------
