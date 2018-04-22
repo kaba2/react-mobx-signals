@@ -1,5 +1,5 @@
 import { MeshVertex, MeshEdge, MeshCell } from 'src/types/mesh';
-import {Signal, dependsOn} from './signal';
+import {Signal, dependsOn} from 'src/typed-signals/src/Signal';
 import {action} from 'mobx';
 
 export default class Selection {

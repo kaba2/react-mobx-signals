@@ -1,4 +1,4 @@
-import {Signal} from './signal';
+import {Signal} from 'src/typed-signals/src/Signal';
 import Matrix from './matrix';
 
 export default class Node {

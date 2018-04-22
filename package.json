@@ -10,8 +10,7 @@
     "react": "^16.3.1",
     "react-dom": "^16.3.1",
     "react-scripts-ts": "2.14.0",
-    "three": "^0.92.0",
-    "typed-signals": "^1.0.2"
+    "three": "^0.92.0"
   },
   "scripts": {
     "start": "react-scripts-ts start",

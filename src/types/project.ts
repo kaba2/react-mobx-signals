@@ -5,7 +5,7 @@ import { renderMesh } from 'src/rendering/rendering';
 import * as Canvas from 'src/rendering/canvas';
 import Scene from 'src/types/scene';
 import Tool from 'src/tools/tool';
-import {Signal, dependsOn} from './signal';
+import {Signal, dependsOn} from 'src/typed-signals/src/Signal';
 
 export default class Project {
 	private _selections = new Set<Selection>();

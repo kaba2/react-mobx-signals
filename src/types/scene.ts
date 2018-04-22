@@ -2,7 +2,7 @@ import Model from './model';
 import {Mesh, MeshCell} from 'src/types/mesh';
 import {Vector2} from 'three';
 import {distanceSegmentPoint} from 'src/geometry/distance-segment-point';
-import {Signal} from './signal';
+import {Signal} from 'src/typed-signals/src/Signal';
 
 export default class Scene {
 	private _models = new Set<Model>();

@@ -1,5 +1,5 @@
 import {Vector2} from 'three';
-import { Signal, dependsOn } from './signal';
+import { Signal, dependsOn } from 'src/typed-signals/src/Signal';
 import Segment from 'src/geometry/segment';
 
 let globalEdgeId = 0;
