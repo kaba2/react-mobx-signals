@@ -40,7 +40,26 @@ An object must be able to control _when_ its state-changes are communicated outs
 
 ### Definitions
 
-A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. 
+A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is now called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance.
+
+```typescript
+const signal = new Signal<() => void>();
+const slot = () => {console.log('Hello, world!')};
+const connection = signal.connect(slot);
+const anotherSlot = () => {console.log('Hello again!')};
+const anotherConnection = signal.connect(anotherSlot);
+signal.emit();
+// Hello, world!
+// Hello again!
+anotherConnection.disconnect();
+signal.emit();
+// Hello, world!
+connection.enabled = false;
+signal.emit();
+connection.enabled = true;
+signal.emit();
+// Hello, world!
+```
 
 ### Communication
 
@@ -84,8 +103,6 @@ class Project {
 	}
 }
 ``` 
-
-Sometimes there is a need to temporarily _disable_ a connection. This is supported by signal and slots libraries directly; it does not require disconnecting the connection. Each connection can be given a _priority_, which decides the calling order when the signal is emitted.
 
 ### Aggregation
 
