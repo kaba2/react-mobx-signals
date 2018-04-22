@@ -35,11 +35,11 @@ Installation
 Signals and slots
 -----------------
 
-An object must be able to control _when_ its state-changes are communicated outside, because only the object knows _when_ its invariants are satisfied, or _when_ a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. Every time a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
+An object must be able to control _when_ its state-changes are communicated outside, because only the object knows _when_ its invariants are satisfied, or _when_ a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. When a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
 
 ### Definitions
 
-A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance. In this demonstration we use the `typed-signals` library. However, the same principles hold for any signals and slots library.
+A _slot_ is a function reference. A _connection_ is an object which stores a reference to a signal and a slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new connection with slot `B` to `A`. To say that a signal is _emitted_ means to call its connections one by one. A connection can be _disabled_, in which case it is not called on emittance until it is _enabled_ again. A connection can be given a _priority_, which decides the order in which the connections are called on emittance. 
 
 ```typescript
 const slot = () => {console.log('Hello, world!')};
@@ -59,6 +59,8 @@ connection.enabled = true;
 signal.emit();
 // Hello, world!
 ```
+
+In this demonstration we use the `typed-signals` library. However, the same principles hold for any signals and slots library.
 
 ### Communication
 
