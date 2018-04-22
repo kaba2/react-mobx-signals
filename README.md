@@ -17,6 +17,22 @@ The example project is a program for drawing graphs, consisting of vertices and 
 * The objects communicate with each other automatically after state-changes, so that for example when an edge is removed from the graph, it is also removed from the selection.
 * Achieving this does not require much more than specifying useful signals for the objects; there is minimal boilerplate.
 
+Installation
+------------
+
+* Download the files as a ZIP.
+* Extract to a folder, and in that folder type
+
+	```
+	npm install
+	```
+
+* To run the program, type
+
+	```
+	npm start
+	```
+
 Signals and slots
 -----------------
 
