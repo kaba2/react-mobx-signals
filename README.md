@@ -11,7 +11,7 @@ Objects in a traditional object-oriented design communicate automatically with e
 What it does
 ------------
 
-The example project is a program for drawing graphs, consisting of vertices and edges. The program has two tools: the drawing tool and the selection tool. The first allows to add edges to the graph, while the latter allows to select a subset of vertices and edges and remove that selection-set. The program provides reactive views to the graph data, showing the set of the vertices and edges in the graph and in the selection. The program demonstrates that:
+The example project is a program for drawing graphs, consisting of vertices and edges. The program has two tools: the drawing tool and the selection tool. The first allows to add edges to the graph, while the latter allows to select a subset of vertices and edges and remove that selection-set. The program provides views to the graph data, which change automatically in reaction to the modification of the state data. The program demonstrates that:
 
 * The objects communicate with each other automatically after state-changes, so that for example when an edge is removed from the graph, it is also removed from the selection.
 * The user-interface reacts automatically to changes in state represented by a traditional object-oriented design.
