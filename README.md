@@ -223,8 +223,12 @@ public* vertices(): IterableIterator<Vertex> {
 
 After adding this dependency-information the user-interface views for the `Selection` class react properly to the changes in selection-state.
 
-Batch updates
--------------
+Performance
+-----------
+
+What has been said above is already a working solution. What follows are a few additional notes on performance.
+
+### Batch updates
 
 With batch updates it is often desirable to replace the communication of many small related state-changes, such as `edgeRemoved`, with a communication of a single big state-change, such as `allEdgesRemoved`. This is because every emit of a signal causes an immediate communication to other objects and also causes `MobX` to update the relevant `React` components.
 
@@ -233,8 +237,7 @@ There are three ways to improve the performance of batch updates:
 2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals.
 3. Apply the `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
-Polling
--------
+### Polling
 
 It is worth noting that not all properties should be tracked with signals. For example, when the graph contains millions of vertices, then changes to the positions of the vertices should probably not be communicated with signals, but rather with some simple book-keeping ('has the position of any vertex in the graph changed?'), which can be reacted to later in aggregate by repeated polling (such as what happens in an event/render-loop).
 
