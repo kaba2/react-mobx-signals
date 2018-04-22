@@ -112,31 +112,6 @@ Aggregation is a useful technique with signals and slots. Each slot in a connect
 
 Implementing the signals and slots mechanism is simple. For example, the source code for typed-signals library takes about 360 lines with comments and some additional bells and whistles. Modifying this library or rolling your own should be in reach for any project.
 
-Connecting `typed-signals` with `MobX`
---------------------------------------
-
-The `typed-signals` library is an implementation of signals and slots for Typescript. `typed-signals` can be combined with the `MobX` library by specifying that each emit of a signal also updates a `MobX` observable stored in the signal. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
-
-* Add a new import in `Signal.ts`:
-
-	```typescript
-	import {observable} from 'mobx';
-	```
-
-* Add a new `Signal` class member:
-
-	```typescript
-	@observable public mobx = {};
-	```
-
-* Add a new assignment at the end of `Signal.emitInternal()`:
-
-	```typescript
-    this.mobx = {}
-	```
-
-These changes achieve the goal of notifying `MobX` whenever a signal is emitted. Ideally, we would never see `MobX` observables again in our code; signals are the interface for state-change-communication between objects at valid and relevant states.
-
 `React`
 -------
 
@@ -150,7 +125,6 @@ interface MeshProps {
 	lastName: string;
 }
 
-@observer
 class Greeting extends React.Component<MeshProps, {}> {
 	public render() {
 		return (
@@ -185,9 +159,41 @@ The `MobX` library is connected with `React` in the following minimal way:
 
 	```typescript
 	@observer
-	class AppUi extends React.Component<AppProps, AppState> {
+	class Greeting extends React.Component<MeshProps, {}> {
 		...
 	}
 	```
 
-These changes achieve the goal of notifying the `React` component whenever a `MobX` observable is changed --- which in our case is whenever a signal is emitted.
+These changes achieve the goal of notifying the `React` component whenever a `MobX` observable is changed. The last thing to do is to connect `MobX` observables with signals and slots.
+
+Connecting `typed-signals` with `MobX`
+--------------------------------------
+
+The `typed-signals` library is an implementation of signals and slots for Typescript. `typed-signals`, as well as any signals and slots library, can be combined with the `MobX` library by specifying that each emit of a signal also updates a `MobX` observable stored in the signal. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
+
+* Add a new import in `Signal.ts`:
+
+	```typescript
+	import {observable} from 'mobx';
+	```
+
+* Add a new `Signal` class member:
+
+	```typescript
+	@observable public mobx = {};
+	```
+
+* Add a new assignment at the end of `Signal.emitInternal()`:
+
+	```typescript
+    this.mobx = {}
+	```
+
+These changes achieve the goal of notifying `MobX` whenever a signal is emitted. Ideally, we would never see `MobX` observables again in our code; signals are the interface for state-change-communication between objects at valid and relevant states.
+
+Summary
+-------
+
+This demonstration shows how to combine `React`, `MobX` and `typed-signals` (signals and slots) into a modern application supporting a reactive user-interface and communication between objects while remaining object-oriented and keeping the boilerplate to a minimum.
+
+
