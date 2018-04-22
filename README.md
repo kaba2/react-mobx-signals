@@ -33,12 +33,12 @@ Installation
 	npm start
 	```
 
-Communication between objects
------------------------------
+Signals and slots
+-----------------
 
 An object must be able to control _when_ its state-changes are communicated outside, because only the object knows _when_ its invariants are satisfied, or _when_ a state-change is relevant. An object is in _valid state_ whenever its invariants are satisfied, and in _invalid state_ otherwise. Every time a member function of a (correctly-implemented) object is called, an object starts from a valid state, incrementally modifies its state, perhaps passing through invalid states, and finally ends up back to another valid state --- as specified by the member function's contract. The invalid states in the middle must remain hidden from outside observers, as must valid but irrelevant states. An object specifies valid program-locations at which it notifies interested observers about its state-changes. These program-locations are specified by emitting a signal. 
 
-### Signals and slots
+### Definitions
 
 A _slot_ is a function reference. A _connection_ is an object which stores one slot. The _signature_ of the connection is the function-signature of its slot. A _signal_ is an object which stores a set of connections with the same signature. To _connect_ a signal `A` to a slot `B` means to store a new `B`-connection to `A`. To say that a signal is _emitted_ means to call its connections one by one. 
 
@@ -56,6 +56,10 @@ class Selection {
 	...
 }
 ```
+
+Signals and slots allows objects of arbitrary type communicate with each other at well-defined instants without type-coupling.
+
+### Connections
 
 Who creates the connections? The most typical situation is that each object `A` has a parent object `B` which creates and owns `A`. The parent object `B` connects `A`'s signals to other objects' slots upon creation; and often it is either to `B`'s own private slot or to a slot of `B`'s another child-object. The connections usually remain static through the lifetime of the object `A`, and are disconnected only when `A` is removed from the parent `B`. This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is "destructed": the parent connects and disconnects its children. 
 
@@ -81,9 +85,9 @@ class Project {
 
 Sometimes there is a need to temporarily _disable_ a connection. This is supported by signal and slots libraries directly; it does not require disconnecting the connection. Each connection can be given a _priority_, which decides the calling order when the signal is emitted.
 
-Aggregation is a useful technique with signals and slots. Each slot in a connection can _return_ a value. An _aggregator_ object attaches to a signal, and observes, combines, and perhaps stores the connection-values, which it can then return as the result of the signal emittance process. The aggregate return type can differ from the slot return type. The aggregator can also stop the emitting process based on its observed values. For example, a signal could be asking each object behind a slot to perform a given task. Once an object agrees to carry out that task, the emitting process is stopped.
+### Aggregation
 
-Signals and slots allows objects of arbitrary type communicate with each other at well-defined instants.
+Aggregation is a useful technique with signals and slots. Each slot in a connection can _return_ a value. An _aggregator_ object attaches to a signal, and observes, combines, and perhaps stores the connection-values, which it can then return as the result of the signal emittance process. The aggregate return type can differ from the slot return type. The aggregator can also stop the emitting process based on its observed values. For example, a signal could be asking each object behind a slot to perform a given task. Once an object agrees to carry out that task, the emitting process is stopped.
 
 ### Implementation
 
