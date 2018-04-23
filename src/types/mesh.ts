@@ -6,8 +6,8 @@ let globalEdgeId = 0;
 let globalVertexId = 0;
 
 export class MeshCell {
-	private _selected: boolean;
-	private _highlighted: boolean;
+	private _selected: boolean = false;
+	private _highlighted: boolean = false;
 
 	public setSelected(selected: boolean) {
 		this._selected = selected;

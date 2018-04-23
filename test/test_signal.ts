@@ -2,7 +2,6 @@
 
 import { suite, test } from "mocha-typescript";
 import { assert } from "chai";
-//import { Signal } from "src/typed-signals/src/Signal";
 import { Signal } from "src/types/signal";
 
 class Dummy {
