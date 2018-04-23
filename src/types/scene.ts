@@ -2,23 +2,26 @@ import Model from './model';
 import {Mesh, MeshCell} from 'src/types/mesh';
 import {Vector2} from 'three';
 import {distanceSegmentPoint} from 'src/geometry/distance-segment-point';
-import {Signal} from 'src/typed-signals/src/Signal';
+import {Signal, connectable} from 'src/types/signal';
 
 export default class Scene {
 	private _models = new Set<Model>();
 
-	public readonly modelAdded = new Signal<(model: Model) => void>();
-	public readonly modelToBeRemoved = new Signal<(model: Model) => void>();
+	private _modelAdded = new Signal<(model: Model) => void>();
+	public readonly modelAdded = connectable(this._modelAdded);
+	
+	private _modelToBeRemoved = new Signal<(model: Model) => void>();
+	public readonly modelToBeRemoved = connectable(this._modelToBeRemoved);
 
 	public addModel(mesh: Mesh): Model {
 		const model = new Model(mesh);
 		this._models.add(model);
-		this.modelAdded.emit(model);
+		this._modelAdded.emit(model);
 		return model;
 	}
 
 	public removeModel(model: Model) {
-		this.modelToBeRemoved.emit(model);
+		this._modelToBeRemoved.emit(model);
 		this._models.delete(model);
 	}
 

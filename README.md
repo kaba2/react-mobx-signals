@@ -216,8 +216,12 @@ We can then use it in the `Selection` class as follows:
 
 ```typescript
 public* vertices(): IterableIterator<Vertex> {
-	dependsOn(this.vertexAdded, this.vertexRemoved);
+	this.dependsOnVertices();
 	yield* this._vertices.keys();
+}
+
+public dependsOnVertices() {
+	dependsOn(this.vertexAdded, this.vertexRemoved);
 }
 ```
 
@@ -233,8 +237,60 @@ What has been said above is already a working solution. What follows are a few a
 With batch updates it is often desirable to replace the communication of many small related state-changes, such as `edgeRemoved`, with a communication of a single big state-change, such as `allEdgesRemoved`. This is because every emit of a signal causes an immediate communication to other objects and also causes `MobX` to update the relevant `React` components.
 
 There are three ways to improve the performance of batch updates:
-1. Implement the batch update using non-emitting operations, such as clearing an internal edge-set, and then emit the corresponding batch-signal. 
-2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals.
+1. Implement the batch update using non-emitting internal operations, such as clearing an internal edge-set, and then emit the corresponding batch-signal. 
+2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals. This pattern could be encapsulated into a generic function:
+
+	```typescript
+	function batch(work: () => void, signals: AbstractSignal[]) {
+		const previous: boolean[] = [];
+		for (const signal of signals) {
+			/* Enable returns whether the signal was previously enabled. */
+			previous.push(signal.enable(false));
+		}
+		work();
+		for (let i = 0;i < signals.length;++i) {
+			signals[i].enable(previous[i]);
+		}
+	}
+	```
+
+	This would be used in the implementation of `removeAllEdges()` as in `batch(() => {...code...}, [this.edgeRemoved])`. The `typed-signals` library does not currently support `enable()` or `AbstractSignal` as shown above . In this demonstration we have mofidied the library to support them by the following modifications:
+
+	```typescript
+	export class AbstractSignal {
+		private _enabled: boolean = true;
+
+		public enable(enabled: boolean): boolean {
+			const previous = this._enabled;
+			this._enabled = enabled;
+			return previous;
+		}
+
+		public isEnabled(): boolean {
+			return this._enabled;
+		}
+	}
+
+	export class Signal<CB extends Function> extends AbstractSignal {
+		...
+		private emitInternal() {
+			if (!this.isEnabled()) {
+				return;
+			}
+			...
+		}
+		...
+		protected emitCollecting<RT>(collector: Collector<CB, RT>, args: any) {
+			if (!this.isEnabled()) {
+				return;
+			}
+			...
+		}
+		...
+	}
+
+	```
+
 3. Apply `MobX`'s `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
 ### Polling

@@ -1,5 +1,5 @@
 import {Vector2} from 'three';
-import { Signal, dependsOn } from 'src/typed-signals/src/Signal';
+import { Signal, connectable, dependsOn } from 'src/types/signal';
 import Segment from 'src/geometry/segment';
 
 let globalEdgeId = 0;
@@ -101,39 +101,56 @@ export class Edge extends MeshCell {
 export class Mesh {
 	private _vertices = new Set<Vertex>();
 	private _edges = new Set<Edge>();
-	
-	public readonly vertexToBeAdded = new Signal<() => void>();
-	public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
-	public readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
-	public readonly vertexRemoved = new Signal<() => void>();
 
-	public readonly edgeToBeAdded = new Signal<() => void>();
-	public readonly edgeAdded = new Signal<(edge: Edge) => void>();
-	public readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
-	public readonly edgeRemoved = new Signal<() => void>();
-	
-	public readonly toBeCleared = new Signal<(mesh: Mesh) => void>();
-	public readonly cleared = new Signal<(mesh: Mesh) => void>();
+	private _vertexToBeAdded = new Signal<() => void>();
+	public readonly vertexToBeAdded = connectable(this._vertexToBeAdded);
 
+	private _vertexAdded = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexAdded = connectable(this._vertexAdded);
+
+	private _vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexToBeRemoved = connectable(this._vertexToBeRemoved);
+
+	private _vertexRemoved = new Signal<() => void>();
+	public readonly vertexRemoved = connectable(this._vertexRemoved);
+
+	private _edgeToBeAdded = new Signal<() => void>();
+	public readonly edgeToBeAdded = connectable(this._edgeToBeAdded);
+
+	private _edgeAdded = new Signal<(edge: Edge) => void>();
+	public readonly edgeAdded = connectable(this._edgeAdded);
+
+	private _edgeToBeRemoved = new Signal<(edge: Edge) => void>();
+	public readonly edgeToBeRemoved = connectable(this._edgeToBeRemoved);
+
+	private _edgeRemoved = new Signal<() => void>();
+	public readonly edgeRemoved = connectable(this._edgeRemoved);
+
+	private _toBeCleared = new Signal<(mesh: Mesh) => void>();
+	public readonly toBeCleared = connectable(this._toBeCleared);
+
+	private _cleared = new Signal<(mesh: Mesh) => void>();
+	public readonly cleared = connectable(this._cleared);
+	
 	public clear() {
-		this.toBeCleared.emit(this);
+		this._toBeCleared.emit(this);
 
 		this._vertices.clear();
 		this._edges.clear();
 
-		this.cleared.emit(this);
+		this._cleared.emit(this);
 	}
 
 	public disconnectAll() {
-		this.vertexToBeAdded.disconnectAll();
-		this.vertexAdded.disconnectAll();
-		this.vertexToBeRemoved.disconnectAll();
-		this.vertexRemoved.disconnectAll();
+		this._vertexToBeAdded.disconnectAll();
+		this._vertexAdded.disconnectAll();
+		this._vertexToBeRemoved.disconnectAll();
+		this._vertexRemoved.disconnectAll();
 
-		this.edgeToBeAdded.disconnectAll();
-		this.edgeAdded.disconnectAll();
-		this.edgeToBeRemoved.disconnectAll();
-		this.edgeRemoved.disconnectAll();
+		this._edgeToBeAdded.disconnectAll();
+		this._edgeAdded.disconnectAll();
+		this._edgeToBeRemoved.disconnectAll();
+		this._edgeRemoved.disconnectAll();
 	}
 
 	public get numVertices(): number {
@@ -148,12 +165,12 @@ export class Mesh {
 
 	public addVertex(): Vertex {
 		console.log('<Mesh.addVertex>');
-		this.vertexToBeAdded.emit();
+		this._vertexToBeAdded.emit();
 
 		const vertex = new Vertex();
 		this._vertices.add(vertex);
 		
-		this.vertexAdded.emit(vertex);
+		this._vertexAdded.emit(vertex);
 		console.log('<Mesh.addVertex/>');
 		return vertex;
 	}
@@ -166,11 +183,11 @@ export class Mesh {
 			this.removeEdge(edge);
 		}
 
-		this.vertexToBeRemoved.emit(vertex);
+		this._vertexToBeRemoved.emit(vertex);
 
 		this._vertices.delete(vertex);
 		
-		this.vertexRemoved.emit();
+		this._vertexRemoved.emit();
 		console.log('<Mesh.removeVertex/>');
 	}
 
@@ -182,14 +199,14 @@ export class Mesh {
 
 	public addEdge(from: Vertex, to: Vertex): Edge {
 		console.log('<Mesh.addEdge>');
-		this.edgeToBeAdded.emit();
+		this._edgeToBeAdded.emit();
 
 		const edge = new Edge(from, to);
 		from._addEdge(edge);
 		to._addEdge(edge);
 		this._edges.add(edge);
 
-		this.edgeAdded.emit(edge);
+		this._edgeAdded.emit(edge);
 		console.log('<Mesh.addEdge/>');
 		return edge;
 	}
@@ -197,11 +214,11 @@ export class Mesh {
 	public removeEdge (edge: Edge) {
 		console.log('<Mesh.removeEdge>');
 
-		this.edgeToBeRemoved.emit(edge);
+		this._edgeToBeRemoved.emit(edge);
 		
 		this._edges.delete(edge);
 		
-		this.edgeRemoved.emit();
+		this._edgeRemoved.emit();
 		console.log('<Mesh.removeEdge/>');
 	}
 
@@ -212,14 +229,14 @@ export class Mesh {
 	}
 
 	private dependsOnVertexChanges() {
-		dependsOn(this.vertexAdded);
-		dependsOn(this.vertexRemoved);
-		dependsOn(this.cleared);
+		dependsOn(this._vertexAdded);
+		dependsOn(this._vertexRemoved);
+		dependsOn(this._cleared);
 	}
 
 	private dependsOnEdgeChanges() {
-		dependsOn(this.edgeAdded);
-		dependsOn(this.edgeRemoved);
-		dependsOn(this.cleared);
+		dependsOn(this._edgeAdded);
+		dependsOn(this._edgeRemoved);
+		dependsOn(this._cleared);
 	}
 }

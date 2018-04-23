@@ -1,19 +1,35 @@
 import { Vertex, Edge, MeshCell } from 'src/types/mesh';
-import {Signal, dependsOn} from 'src/typed-signals/src/Signal';
+import {Signal, dependsOn, connectable} from 'src/types/signal';
 import {action} from 'mobx';
 
 export default class Selection {
 	private _vertices = new Set<Vertex>();
-	public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
-	public readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
-	public readonly vertexRemoved = new Signal<() => void>();
-	public readonly verticesCleared = new Signal<() => void>();
+
+	private _vertexAdded = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexAdded = connectable(this._vertexAdded);
+	
+	private _vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexToBeRemoved = connectable(this._vertexToBeRemoved);
+	
+	private _vertexRemoved = new Signal<() => void>();
+	public readonly vertexRemoved = connectable(this._vertexRemoved);
+	
+	private _verticesCleared = new Signal<() => void>();
+	public readonly verticesCleared = connectable(this._verticesCleared);
 	
 	private _edges = new Set<Edge>();
-	public readonly edgeAdded = new Signal<(edge: Edge) => void>();
-	public readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
-	public readonly edgeRemoved = new Signal<() => void>();
-	public readonly edgesCleared = new Signal<() => void>();
+	
+	private _edgeAdded = new Signal<(edge: Edge) => void>();
+	public readonly edgeAdded = connectable(this._edgeAdded);
+	
+	private _edgeToBeRemoved = new Signal<(edge: Edge) => void>();
+	public readonly edgeToBeRemoved = connectable(this._edgeToBeRemoved);
+	
+	private _edgeRemoved = new Signal<() => void>();
+	public readonly edgeRemoved = connectable(this._edgeRemoved);
+	
+	private _edgesCleared = new Signal<() => void>();
+	public readonly edgesCleared = connectable(this._edgesCleared);
 
 	public* vertices(): IterableIterator<Vertex> {
 		this.dependsOnVertexChanges();
@@ -30,27 +46,27 @@ export default class Selection {
 		if (cell instanceof Edge) {
 			this._edges.add(cell);
 			cell.setSelected(true);
-			this.edgeAdded.emit(cell);
+			this._edgeAdded.emit(cell);
 		} else if (cell instanceof Vertex) {
 			this._vertices.add(cell);
 			cell.setSelected(true);
-			this.vertexAdded.emit(cell);
+			this._vertexAdded.emit(cell);
 		}
 	}
 
 	public remove(cell: MeshCell) {
 		if (cell instanceof Edge) {
 			console.log('<Selection.remove(Edge)>');
-			this.edgeToBeRemoved.emit(cell);
+			this._edgeToBeRemoved.emit(cell);
 			this._edges.delete(cell);
 			cell.setSelected(false);
-			this.edgeRemoved.emit();
+			this._edgeRemoved.emit();
 		} else if (cell instanceof Vertex) {
 			console.log('<Selection.remove(Vertex)>');
-			this.vertexToBeRemoved.emit(cell);
+			this._vertexToBeRemoved.emit(cell);
 			this._vertices.delete(cell);
 			cell.setSelected(false);
-			this.vertexRemoved.emit();
+			this._vertexRemoved.emit();
 		}
 	}
 
@@ -85,20 +101,20 @@ export default class Selection {
 		}
 		this._vertices.clear();
 		this._edges.clear();
-		this.verticesCleared.emit();
-		this.edgesCleared.emit();
+		this._verticesCleared.emit();
+		this._edgesCleared.emit();
 	}
 
 	private dependsOnVertexChanges() {
-		dependsOn(this.vertexAdded);
-		dependsOn(this.vertexRemoved);
-		dependsOn(this.verticesCleared);
+		dependsOn(this._vertexAdded);
+		dependsOn(this._vertexRemoved);
+		dependsOn(this._verticesCleared);
 	}
 
 	private dependsOnEdgeChanges() {
-		dependsOn(this.edgeAdded);
-		dependsOn(this.edgeRemoved);
-		dependsOn(this.edgesCleared);
+		dependsOn(this._edgeAdded);
+		dependsOn(this._edgeRemoved);
+		dependsOn(this._edgesCleared);
 	}
 
 	private dependsOnChanges() {

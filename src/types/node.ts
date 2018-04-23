@@ -1,13 +1,14 @@
-import {Signal} from 'src/typed-signals/src/Signal';
+import {Signal, connectable} from 'src/types/signal';
 import Matrix from './matrix';
 
 export default class Node {
 	private _transform: Matrix = new Matrix();
-	public transformChanged = new Signal<(node: Node) => void>();
+	private _transformChanged = new Signal<(node: Node) => void>();
+	public readonly transformChanged = connectable(this._transformChanged);
 
 	public setTransform(transform: Matrix) {
 		this._transform = transform;
-		this.transformChanged.emit(this);
+		this._transformChanged.emit(this);
 	}
 
 	public transform(): Matrix {

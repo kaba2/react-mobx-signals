@@ -5,7 +5,7 @@ import { renderMesh } from 'src/rendering/rendering';
 import * as Canvas from 'src/rendering/canvas';
 import Scene from 'src/types/scene';
 import Tool from 'src/tools/tool';
-import {Signal, dependsOn} from 'src/typed-signals/src/Signal';
+import {Signal, dependsOn, connectable} from 'src/types/signal';
 
 export default class Project {
 	private _selections = new Set<Selection>();
@@ -14,19 +14,36 @@ export default class Project {
 	private _scene?: Scene;
 	private _tool?: Tool;
 
-	public readonly meshAdded = new Signal<(mesh: Mesh) => void>();
-	public readonly meshToBeRemoved = new Signal<(mesh: Mesh) => void>();
-	public readonly meshRemoved = new Signal<() => void>();
+	private _meshAdded = new Signal<(mesh: Mesh) => void>();
+	public readonly meshAdded = connectable(this._meshAdded);
 
-	public readonly selectionAdded = new Signal<(selection: Selection) => void>();
-	public readonly selectionToBeRemoved = new Signal<(selection: Selection) => void>();
-	public readonly selectionRemoved = new Signal<() => void>();
+	private _meshToBeRemoved = new Signal<(mesh: Mesh) => void>();
+	public readonly meshToBeRemoved = connectable(this._meshToBeRemoved);
 
-	public readonly sceneAdded = new Signal<(scene: Scene) => void>();
-	public readonly sceneToBeRemoved = new Signal<(scene: Scene) => void>();
-	public readonly sceneRemoved = new Signal<() => void>();
+	private _meshRemoved = new Signal<() => void>();
+	public readonly meshRemoved = connectable(this._meshRemoved);
 
-	public readonly toolWasSet = new Signal<(tool: Tool) => void>();
+	private _selectionAdded = new Signal<(selection: Selection) => void>();
+	public readonly selectionAdded = connectable(this._selectionAdded);
+
+	private _selectionToBeRemoved = new Signal<(selection: Selection) => void>();
+	public readonly selectionToBeRemoved = connectable(this._selectionToBeRemoved);
+
+	private _selectionRemoved = new Signal<() => void>();
+	public readonly selectionRemoved = connectable(this._selectionRemoved);
+
+	private _sceneAdded = new Signal<(scene: Scene) => void>();
+	public readonly sceneAdded = connectable(this._sceneAdded);
+
+	private _sceneToBeRemoved = new Signal<(scene: Scene) => void>();
+	public readonly sceneToBeRemoved = connectable(this._sceneToBeRemoved);
+
+	private _sceneRemoved = new Signal<() => void>();
+	public readonly sceneRemoved = connectable(this._sceneRemoved);
+
+	private _toolWasSet = new Signal<(tool: Tool) => void>();
+	public readonly toolWasSet = connectable(this._toolWasSet);
+
 
 	public constructor() {
 		setInterval(this.render, 1000 / 60);
@@ -34,7 +51,7 @@ export default class Project {
 
 	public setTool(tool: Tool) {
 		this._tool = tool;
-		this.toolWasSet.emit(tool);
+		this._toolWasSet.emit(tool);
 	}
 
 	public tool(): Tool|undefined {
@@ -57,14 +74,14 @@ export default class Project {
 	public addScene(): Scene {
 		const scene = new Scene();
 		this._scenes.add(scene);
-		this.sceneAdded.emit(scene);
+		this._sceneAdded.emit(scene);
 		return scene;
 	}
 
 	public removeScene(scene: Scene) {
-		this.sceneToBeRemoved.emit(scene);
+		this._sceneToBeRemoved.emit(scene);
 		this._scenes.delete(scene);
-		this.sceneRemoved.emit();
+		this._sceneRemoved.emit();
 	}
 
 	public scene(): Scene|undefined {
@@ -77,20 +94,20 @@ export default class Project {
 		mesh.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
 		mesh.edgeToBeRemoved.connect(this.onEdgeToBeRemoved)
 		this._meshes.add(mesh);
-		this.meshAdded.emit(mesh);
+		this._meshAdded.emit(mesh);
 		return mesh;
 	}
 
 	public removeMesh(mesh: Mesh) {
-		this.meshToBeRemoved.emit(mesh);
+		this._meshToBeRemoved.emit(mesh);
 		mesh.clear();
 		this._meshes.delete(mesh);
-		this.meshRemoved.emit();
+		this._meshRemoved.emit();
 	}
 
 	public* meshes(): IterableIterator<Mesh> {
-		dependsOn(this.meshAdded);
-		dependsOn(this.meshRemoved);
+		dependsOn(this._meshAdded);
+		dependsOn(this._meshRemoved);
 		yield* this._meshes;
 	}
 
@@ -98,19 +115,19 @@ export default class Project {
 		const selection = new Selection();
 		precond.checkState(!this._selections.has(selection));
 		this._selections.add(selection);
-		this.selectionAdded.emit(selection);
+		this._selectionAdded.emit(selection);
 		return selection;
 	}
 
 	public removeSelection(selection: Selection) {
-		this.selectionToBeRemoved.emit(selection);
+		this._selectionToBeRemoved.emit(selection);
 		this._selections.delete(selection);
-		this.selectionRemoved.emit();
+		this._selectionRemoved.emit();
 	}
 
 	public* selections(): IterableIterator<Selection> {
-		dependsOn(this.selectionAdded);
-		dependsOn(this.selectionRemoved);
+		dependsOn(this._selectionAdded);
+		dependsOn(this._selectionRemoved);
 		yield* this._selections;
 	}
 
