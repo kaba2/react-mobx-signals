@@ -53,14 +53,12 @@ signal.emit();
 anotherConnection.disconnect();
 signal.emit();
 // Hello, world!
-connection.enabled = false;
+connection.disable();
 signal.emit();
-connection.enabled = true;
+connection.enable();
 signal.emit();
 // Hello, world!
 ```
-
-In this demonstration we use the `typed-signals` library. However, the same principles hold for any signals and slots library.
 
 ### Communication
 
@@ -69,11 +67,12 @@ An object stores its signals as public read-only member variables. These signals
 ```typescript
 class Selection {
 	private _vertices = new Set<Vertex>();
-	public readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
+	private _vertexAdded = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexAdded = connectable(this._vertexAdded);
 	...
 	public addVertex(vertex: Vertex) {
 		this._vertices.add(vertex);
-		this.vertexAdded.emit(vertex);
+		this._vertexAdded.emit(vertex);
 	}
 	...
 }
@@ -88,14 +87,15 @@ Who creates the connections between signals and slots? The most typical situatio
 ```typescript
 class Project {
 	private _selection = new Selection();
-	public readonly meshAdded = new Signal<(mesh: Mesh) => void>();
+	private _meshAdded = new Signal<(mesh: Mesh) => void>();
+	public readonly meshAdded = connectable(this._meshAdded);
 	private _meshes = new Set<Mesh>();
 	...
 	public addMesh(): Mesh {
 		const mesh = new Mesh();
 		mesh.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
 		this._meshes.add(mesh);
-		this.meshAdded.emit(mesh);
+		this._meshAdded.emit(mesh);
 		return mesh;
 	}
 	...
@@ -111,7 +111,7 @@ Aggregation is a useful technique with signals and slots. Each slot in a connect
 
 ### Implementation
 
-Implementing the signals and slots mechanism is simple. For example, the source code for the `typed-signals` library takes about 360 lines with comments and some additional bells and whistles. Modifying this library or rolling your own are both  realistic options.
+Implementing the signals and slots mechanism is simple. The implementation provided with this project takes about 300 lines with comments. It is easy to understand and modify.
 
 `React`
 -------
@@ -178,25 +178,20 @@ Connecting signals and slots with `MobX`
 
 ### Notifying MobX of changes
 
-The `MobX` library can be notified of an emitting signal by storing a `MobX`-observable in each signal, and updating that observable whenever a signal is emitted. In this demonstration we have modified the `typed-signals` library (which we store locally rather than as a dependency) in the following minimal way.
+The `MobX` library can be notified of an emitting signal by storing a `MobX`-observable in each signal, and updating that observable whenever a signal is emitted. 
 
-* Add a new import in `Signal.ts`:
-
-	```typescript
-	import {observable} from 'mobx';
-	```
-
-* Add a new `Signal` class member:
-
-	```typescript
+```typescript
+export class Signal<Slot extends Function> implements Connectable<Slot> {
+	...
 	@observable public mobx = {};
-	```
-
-* Add a new assignment at the end of `Signal.emitInternal()`:
-
-	```typescript
-    this.mobx = {}
-	```
+	...
+	private _emit() {
+		...
+		this.mobx = {}
+		...
+	}
+}
+```
 
 Because of using the `@observable` decorator, `MobX` can detect the access to the `mobx` property in the signal, and interprets a getter-access as reading the observable, and setter-access as writing the observable. The setter-access is triggered above as a side-effect of emitting the signal.
 
@@ -241,11 +236,11 @@ There are three ways to improve the performance of batch updates:
 2. Implement the batch update by using emitting operations repeatedly, but disable their signals for the duration of the batch update. When done, emit the batch-signal, and enable the disabled signals. This pattern could be encapsulated into a generic function:
 
 	```typescript
-	function batch(work: () => void, signals: AbstractSignal[]) {
+	function batch(work: () => void, signals: Enablable[]) {
 		const previous: boolean[] = [];
 		for (const signal of signals) {
 			/* Enable returns whether the signal was previously enabled. */
-			previous.push(signal.enable(false));
+			previous.push(signal.disable());
 		}
 		work();
 		for (let i = 0;i < signals.length;++i) {
@@ -254,42 +249,7 @@ There are three ways to improve the performance of batch updates:
 	}
 	```
 
-	This would be used in the implementation of `removeAllEdges()` as in `batch(() => {...code...}, [this.edgeRemoved])`. The `typed-signals` library does not currently support `enable()` or `AbstractSignal` as shown above . In this demonstration we have mofidied the library to support them by the following modifications:
-
-	```typescript
-	export class AbstractSignal {
-		private _enabled: boolean = true;
-
-		public enable(enabled: boolean): boolean {
-			const previous = this._enabled;
-			this._enabled = enabled;
-			return previous;
-		}
-
-		public isEnabled(): boolean {
-			return this._enabled;
-		}
-	}
-
-	export class Signal<CB extends Function> extends AbstractSignal {
-		...
-		private emitInternal() {
-			if (!this.isEnabled()) {
-				return;
-			}
-			...
-		}
-		...
-		protected emitCollecting<RT>(collector: Collector<CB, RT>, args: any) {
-			if (!this.isEnabled()) {
-				return;
-			}
-			...
-		}
-		...
-	}
-
-	```
+	This would be used in the implementation of `removeAllEdges()` as in `batch(() => {...code...}, [this.edgeRemoved])`.
 
 3. Apply `MobX`'s `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
