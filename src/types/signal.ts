@@ -116,6 +116,7 @@ export class Connection<Slot extends Function> {
 		}
 		this._prev._link(this._next);
 		this._link(this);
+		this._signal = undefined;
 		this._slot = undefined;
 		return true;
 	}
