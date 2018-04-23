@@ -181,7 +181,7 @@ Connecting signals and slots with `MobX`
 The `MobX` library can be notified of an emitting signal by storing a `MobX`-observable in each signal, and updating that observable whenever a signal is emitted. 
 
 ```typescript
-export class Signal<Slot extends Function> implements Connectable<Slot> {
+class Signal<Slot extends Function> implements Connectable<Slot> {
 	...
 	@observable public mobx = {};
 	...
@@ -210,7 +210,7 @@ function dependsOn(...signals : {mobx: {}}[]) {
 We can then use it in the `Selection` class as follows:
 
 ```typescript
-export default class Selection {
+class Selection {
 	...
 	public* vertices(): IterableIterator<Vertex> {
 		this.dependsOnVertices();
