@@ -8,6 +8,17 @@ export function dependsOn(...signals : {mobx: {}}[]) {
     }
 }
 
+export function batch(work: () => void, signals: AbstractSignal[]) {
+    const previous: boolean[] = [];
+    for (const signal of signals) {
+        previous.push(signal.enable(false));
+    }
+    work();
+    for (let i = 0;i < signals.length;++i) {
+        signals[i].enable(previous[i]);
+    }
+}
+
 /**
  * SignalLink implements a doubly-linked ring with nodes containing the signal handlers.
  */
@@ -124,12 +135,26 @@ export class SignalConnections {
     }
 }
 
+export class AbstractSignal {
+    private _enabled: boolean = true;
+
+    public enable(enabled: boolean): boolean {
+        const previous = this._enabled;
+        this._enabled = enabled;
+        return previous;
+    }
+
+    public isEnabled(): boolean {
+        return this._enabled;
+    }
+}
+
 /**
  * A signal is a way to publish and subscribe to events.
  * 
  * @typeparam CB The function signature to be implemented by handlers.
  */
-export class Signal<CB extends Function> {
+export class Signal<CB extends Function> extends AbstractSignal {
     /**
      * Publish this signal event (call all handlers).
      * 
@@ -145,7 +170,8 @@ export class Signal<CB extends Function> {
      * Create a new signal.
      */
     public constructor() {
-        (this.emit as any) = this.emitInternal.bind(this);
+        super();
+        this.emit = this.emitInternal.bind(this);
     }
 
     /**
@@ -173,6 +199,9 @@ export class Signal<CB extends Function> {
     }
 
     private emitInternal() {
+        if (!this.isEnabled()) {
+            return;
+        }
         this.emitDepth++;
 
         for (let link = this.head.next; link !== this.head; link = link.next) {
@@ -187,6 +216,9 @@ export class Signal<CB extends Function> {
     }
 
     protected emitCollecting<RT>(collector: Collector<CB, RT>, args: any) {
+        if (!this.isEnabled()) {
+            return;
+        }
         this.emitDepth++;
 
         for (let link = this.head.next; link !== this.head; link = link.next) {
@@ -230,6 +262,7 @@ export abstract class Collector<CB extends Function, RT> {
      */
     public constructor(signal: Signal<CB>) {
         let self = this;
+        this.emit = {} as CB;
         (this.emit as any) = function () { (signal as any).emitCollecting(self, arguments); };
     }
 
