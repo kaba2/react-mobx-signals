@@ -1,6 +1,11 @@
 import * as precond from 'precond';
 import {observable} from 'mobx';
 
+export type ConnectSignals<T> = (signals: T) => void;
+export function noSignals<T>(): ConnectSignals<T> {
+	return (signals: T) => {}
+}
+
 export function connectable<Slot extends Function>(signal: Signal<Slot>): Connectable<Slot> {
 	return signal;
 }
