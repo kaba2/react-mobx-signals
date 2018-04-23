@@ -1,7 +1,6 @@
 import * as precond from 'precond';
 import {observable} from 'mobx';
 
-
 export function connectable<Slot extends Function>(signal: Signal<Slot>): Connectable<Slot> {
 	return signal;
 }
@@ -21,6 +20,16 @@ export function batch(work: () => void, signals: Enablable[]) {
     for (let i = 0;i < signals.length;++i) {
         signals[i].enable(previous[i]);
     }
+}
+
+export interface Enablable {
+	enable(enabled?: boolean): boolean;
+	disable(): boolean;
+	isEnabled(): boolean;
+}
+
+export interface Connectable<Slot extends Function> extends Enablable {
+	connect(slot: Slot, order?: number, placeLast?: boolean): Connection<Slot>;
 }
 
 export class Connection<Slot extends Function> {
@@ -99,11 +108,16 @@ export class Connection<Slot extends Function> {
 
 	/**
 	 * Disconnects the connection from its signal.
+	 * @returns Previous value of this.isConnected().
 	 */
-	public disconnect() {
+	public disconnect(): boolean {
+		if (!this.isConnected()) {
+			return false;
+		}
 		this._prev._link(this._next);
 		this._link(this);
 		this._slot = undefined;
+		return true;
 	}
 
 	/**
@@ -138,16 +152,6 @@ export class Connection<Slot extends Function> {
 	public _forgetCreatedDuringEmit() {
 		this._createdDuringEmit = false;
 	}
-}
-
-export interface Enablable {
-	enable(enabled?: boolean): boolean;
-	disable(): boolean;
-	isEnabled(): boolean;
-}
-
-export interface Connectable<Slot extends Function> extends Enablable {
-	connect(slot: Slot, order?: number, placeLast?: boolean): Connection<Slot>;
 }
 
 export class Signal<Slot extends Function> implements Connectable<Slot> {
@@ -227,7 +231,7 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 	/**
 	 * Connects the signal to a slot.
 	 * @param slot The slot to connect to.
-	 * @param order A number used to order the connections.
+	 * @param order Connections are called in order of increasing order-number.
 	 * @param placeLast Whether to place an equal order number as last, as opposed to first.
 	 * @returns The connection between this signal and the given slot.
 	 * @throws order >= 0
@@ -239,7 +243,7 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 		}
 
 		const connection = new Connection<Slot>(this, slot, order);
-		const searchOrder = placeLast ? order + 1 : order;
+		const searchOrder = placeLast ? (order + 1) : order;
 		
 		// Search for the insertion position.
 		let before = this._sentinel.next();
@@ -251,7 +255,8 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 		}
 
 		// Insert into the list of connections.
-		connection._link(before as Connection<Slot>);
+		before.prev()._link(connection);
+		connection._link(before);
 		
 		return connection;
 	}
@@ -266,7 +271,7 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 		}
 
 		++this._emitDepth;
-		for (const connection of this.connections()) {
+		for (const connection of Array.from(this.connections())) {
 			if (!connection.isEnabled()) {
 				continue;
 			}
@@ -278,6 +283,7 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 			for (const connection of this.connections()) {
 				connection._forgetCreatedDuringEmit();
 			}
+			this._connectionsCreatedDuringEmit = false;
 		}
 
 		this.mobx = {}

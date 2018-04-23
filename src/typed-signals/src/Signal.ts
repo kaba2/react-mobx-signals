@@ -2,13 +2,17 @@
 
 import {observable} from 'mobx';
 
+export function connectable<Slot extends Function>(signal: Signal<Slot>): Connectable<Slot> {
+	return signal;
+}
+
 export function dependsOn(...signals : {mobx: {}}[]) {
     for (const signal of signals) {
         signal.mobx;
     }
 }
 
-export function batch(work: () => void, signals: AbstractSignal[]) {
+export function batch(work: () => void, signals: Enablable[]) {
     const previous: boolean[] = [];
     for (const signal of signals) {
         previous.push(signal.enable(false));
@@ -17,6 +21,16 @@ export function batch(work: () => void, signals: AbstractSignal[]) {
     for (let i = 0;i < signals.length;++i) {
         signals[i].enable(previous[i]);
     }
+}
+
+export interface Enablable {
+    enable(enabled?: boolean): boolean;
+	disable(): boolean;
+	isEnabled(): boolean;
+}
+
+export interface Connectable<Slot extends Function> extends Enablable {
+	connect(slot: Slot): SignalConnection;
 }
 
 /**
@@ -98,6 +112,20 @@ export class SignalConnection {
         return false;
     }
 
+    public isEnabled(): boolean {
+        return this.enabled;
+    }
+
+    public enable(enable: boolean = true): boolean {
+        const previous = this.enabled;
+        this.enabled = enable;
+        return previous;
+    }
+
+    public disable(): boolean {
+        return this.enable(false);
+    }
+
     /**
      * If set to false it prevents the handler from receiving the signals events.
      */
@@ -142,6 +170,10 @@ export class AbstractSignal {
         const previous = this._enabled;
         this._enabled = enabled;
         return previous;
+    }
+
+    public disable(): boolean {
+        return this.enable(false);
     }
 
     public isEnabled(): boolean {

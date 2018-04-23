@@ -1,0 +1,45 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "node",
+			"request": "attach",
+			"name": "Attach by Process ID",
+			"processId": "${command:PickProcess}"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Launch Program",
+			"program": "${workspaceFolder}/build/dev-server.js"
+		},
+		{
+			"type": "node",
+			"request": "launch",
+			"name": "Run Program",
+			"args": ["${relativeFile}"],
+			"cwd": "${workspaceFolder}",
+            "protocol": "inspector",
+			"runtimeArgs": [
+				"-r", "${workspaceFolder}/build/ts-node-register-for-tests",
+				"-r", "tsconfig-paths/register"]
+		},
+		{
+			"type" : "node",
+			"request": "launch",
+			"name" : "Run Mocha Test",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"cwd": "${workspaceFolder}",
+			"protocol": "inspector",
+			"args": [
+				"--slow", "0",
+				"--allow-uncaught",
+				"-t", "100000",
+				"-r", "jsdom-global/register",
+				"-r", "build/ts-node-register-for-tests",
+				"-r", "tsconfig-paths/register",
+				"${relativeFile}"],
+			"internalConsoleOptions": "openOnSessionStart"
+		}
+	]
+}
