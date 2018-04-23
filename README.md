@@ -183,13 +183,14 @@ The `MobX` library can be notified of an emitting signal by storing a `MobX`-obs
 ```typescript
 class Signal<Slot extends Function> implements Connectable<Slot> {
 	...
-	@observable public mobx = {};
+	@observable private _mobx = {};
 	...
 	private _emit() {
 		...
-		this.mobx = {}
+		this._mobx = {}
 		...
 	}
+	...
 }
 ```
 
@@ -197,12 +198,20 @@ Because of using the `@observable` decorator, `MobX` can detect the access to th
 
 ### Specifying dependencies
 
-To trigger the getter-access for signal's `mobx` property, we define the following helper function:
+To trigger the getter-access for signal's `mobx` property, we define the following functions:
 
 ```typescript
-function dependsOn(...signals : {mobx: {}}[]) {
+class Signal<Slot extends Function> implements Connectable<Slot> {
+	...
+	public dependOn() {
+		this._mobx;
+	}
+	...
+}
+...
+function dependsOn(...signals : Dependable[]) {
     for (const signal of signals) {
-        signal.mobx;
+        signal.dependOn();
     }
 }
 ```
