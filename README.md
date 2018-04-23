@@ -62,7 +62,7 @@ signal.emit();
 
 ### Communication
 
-An object stores its signals as public read-only member variables. These signals are connected to other objects's member slots to communicate state-changes. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument. 
+An object stores its signals as private member variables, and then exposes a limited connection-interface as a public readonly member variable. The signals are connected to other objects's member slots to communicate state-changes. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument. 
 
 ```typescript
 class Selection {
