@@ -22,15 +22,6 @@ export default class DrawTool implements Tool {
 		return 'Draw';
 	}
 
-	public onBegin = () => {};
-
-	public onCommit = () => {};
-	public onCancel = () => {};
-
-	public onMouseDragStart = (mouse: Mouse) => {};
-	public onMouseDragEnd = (mouse: Mouse) => {};
-	public onMouseDrag = (mouse: Mouse) => {};
-
 	public onMouseDown = (mouse: Mouse) => {
 		if (this._stage !== 0) {
 			return
@@ -84,5 +75,4 @@ export default class DrawTool implements Tool {
 		
 		this._stage = 0;
 	};
-	public onMouseWheel = (mouse: Mouse) => {};
 }

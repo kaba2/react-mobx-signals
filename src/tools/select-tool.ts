@@ -20,15 +20,6 @@ export default class SelectTool implements Tool {
 		return 'Select';
 	}
 
-	public onBegin = () => {};
-
-	public onCommit = () => {};
-	public onCancel = () => {};
-
-	public onMouseDragStart = (mouse: Mouse) => {};
-	public onMouseDragEnd = (mouse: Mouse) => {};
-	public onMouseDrag = (mouse: Mouse) => {};
-
 	public onMouseUp = (mouse: Mouse) => {
 		if (!mouse.ctrlKey) {
 			this._selection.clear();
@@ -65,5 +56,4 @@ export default class SelectTool implements Tool {
 	};
 
 	public onMouseDown = (mouse: Mouse) => {};
-	public onMouseWheel = (mouse: Mouse) => {};
 }
