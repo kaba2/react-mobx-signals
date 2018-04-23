@@ -86,10 +86,10 @@ export class Connection<Slot extends Function> {
 	}
 
 	/**
-	 * Returns whether this connection is connected to a slot.
+	 * Returns whether the connection is connected to both a signal and a slot.
 	 */
 	public isConnected(): boolean {
-		return !!this._slot;
+		return !!this._signal && !!this._slot;
 	}
 
 	/**
