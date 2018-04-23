@@ -210,14 +210,17 @@ function dependsOn(...signals : {mobx: {}}[]) {
 We can then use it in the `Selection` class as follows:
 
 ```typescript
-public* vertices(): IterableIterator<Vertex> {
-	this.dependsOnVertices();
-	yield* this._vertices.keys();
-}
-
-public dependsOnVertices() {
-	dependsOn(this.vertexAdded, this.vertexRemoved);
-}
+export default class Selection {
+	...
+	public* vertices(): IterableIterator<Vertex> {
+		this.dependsOnVertices();
+		yield* this._vertices.keys();
+	}
+	...
+	public dependsOnVertices() {
+		dependsOn(this.vertexAdded, this.vertexRemoved);
+	}
+	...
 ```
 
 After adding this dependency-information the user-interface views for the `Selection` class react properly to the changes in selection-state.
