@@ -26,13 +26,13 @@ export interface Dependable {
 	dependOn(): void;
 }
 
-export interface Enablable extends Dependable {
+export interface Enablable {
 	enable(enabled?: boolean): boolean;
 	disable(): boolean;
 	isEnabled(): boolean;
 }
 
-export interface Connectable<Slot extends Function> extends Enablable {
+export interface Connectable<Slot extends Function> {
 	connect(slot: Slot, order?: number, placeLast?: boolean): Connection<Slot>;
 }
 
