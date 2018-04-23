@@ -221,6 +221,7 @@ export default class Selection {
 		dependsOn(this.vertexAdded, this.vertexRemoved);
 	}
 	...
+}
 ```
 
 After adding this dependency-information the user-interface views for the `Selection` class react properly to the changes in selection-state.
