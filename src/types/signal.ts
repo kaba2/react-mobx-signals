@@ -5,9 +5,9 @@ export function connectable<Slot extends Function>(signal: Signal<Slot>): Connec
 	return signal;
 }
 
-export function dependsOn(...signals : {mobx: {}}[]) {
+export function dependsOn(...signals : Dependable[]) {
     for (const signal of signals) {
-        signal.mobx;
+        signal.dependOn();
     }
 }
 
@@ -22,7 +22,11 @@ export function batch(work: () => void, signals: Enablable[]) {
     }
 }
 
-export interface Enablable {
+export interface Dependable {
+	dependOn(): void;
+}
+
+export interface Enablable extends Dependable {
 	enable(enabled?: boolean): boolean;
 	disable(): boolean;
 	isEnabled(): boolean;
@@ -161,7 +165,7 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 	private _emitDepth = 0;
 	private _enabled = true;
 	private _connectionsCreatedDuringEmit = false;
-    @observable public mobx = {};
+    @observable private _mobx = {};
 
 	/**
 	 * Constructs an empty signal.
@@ -186,6 +190,13 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 	 */
 	public isEmpty(): boolean {
 		return this._sentinel.next() === this._sentinel;
+	}
+
+	/**
+	 * Triggers a read-dependency to MobX.
+	 */
+	public dependOn() {
+		this._mobx;
 	}
 
 	/**
@@ -287,6 +298,6 @@ export class Signal<Slot extends Function> implements Connectable<Slot> {
 			this._connectionsCreatedDuringEmit = false;
 		}
 
-		this.mobx = {}
+		this._mobx = {}
 	}
 }
