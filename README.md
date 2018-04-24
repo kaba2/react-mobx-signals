@@ -89,9 +89,9 @@ class Mesh {
 		connectSignals(this._signals);
 	}
 	...
-	public addVertex(): Vertex {
+	public removeVertex(vertex: Vertex): Vertex {
 		...
-		this._signals.vertexAdded.emit(vertex);
+		this._signals.vertexToBeRemoved.emit(vertex);
 		...
 	}
 	...
@@ -128,12 +128,13 @@ With public connectivity, the signals are exposed by a limited connection-interf
 ```typescript
 class Mesh {
 	...
-	private _vertexAdded = new Signal<(vertex: Vertex) => void>();
-	public readonly vertexAdded = connectable(this._vertexAdded);
+	private _vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	public readonly vertexToBeRemoved = connectable(this._vertexToBeRemoved);
 	...
-	public addVertex(vertex: Vertex) {
+	public removeVertex(vertex: Vertex) {
 		...
-		this._vertexAdded.emit(vertex);
+		this._vertexToBeRemoved.emit(vertex);
+		...
 	}
 	...
 }
@@ -143,7 +144,7 @@ Connections would then be formed like this:
 
 ```typescript
 const mesh = new Mesh(); 
-mesh.vertexAdded.connect((vertex: Vertex) => {console.log('Vertex added!');});
+mesh.vertexToBeRemoved.connect((vertex: Vertex) => {console.log('Vertex is to be removed!');});
 ```
 
 The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at any time. One can also use a combination of constructor-connectivity and public connectivity.
