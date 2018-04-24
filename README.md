@@ -60,9 +60,70 @@ signal.emit();
 // Hello, world!
 ```
 
-### Communication
+### Signals are members
 
-An object stores its signals as private member variables, and then exposes a limited connection-interface as a public readonly member variable. The signals are connected to other objects's member slots to communicate state-changes. The type of the state-change of is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument. 
+An object defines a set of signals which usually correspond to either a beginning or an end of a state-changing member function. These positions correspond to communicating 'I am going to do something' (such as remove a vertex) and 'I did something' (such as added a vertex), respectively. Signals are stored as private members, because only the object should be able to emit information about its state-changes. The type of the state-change is encoded by the memory-address of the emitting signal-object, and the details of that state-change are encoded in the function-arguments when calling each slot. There are two primary ways in which an object can expose its signals to be connected to slots: constructor-connectivity and public connectivity.
+
+### Constructor-connectivity
+
+With constructor-connectivity, whoever constructs the object provides a callback as a constructor argument. The callback takes in the object's private signals, and connects them to slots. After the constructor, there is no way to reconnect the signals from outside the object.
+
+```typescript
+type ConnectSignals<T> = (signals: T) => void;
+
+function noSignals<T>(): ConnectSignals<T> {
+	return (signals: T) => {}
+}
+
+class MeshSignals {
+	...
+	readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	...
+}
+
+class Mesh {
+	...
+	private _signals = new MeshSignals();
+	...
+	public constructor(connectSignals = noSignals<MeshSignals>()) {
+		connectSignals(this._signals);
+	}
+	...
+	public addVertex(): Vertex {
+		...
+		this._signals.vertexAdded.emit(vertex);
+		...
+	}
+	...
+}
+```
+
+This would be used by the creating object like this:
+
+```typescript
+class Project {
+	...
+	public addMesh(): Mesh {
+		const mesh = new Mesh((signals: MeshSignals) => {
+			...
+			signals.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
+			...
+		});
+		...
+	}	
+	...
+	private onVertexToBeRemoved = (vertex: Vertex) => {
+		...
+	}
+	...
+}
+```
+
+We have adopted constructor-connectivity in this example demonstration.
+
+### Public connectitivity
+
+With public connectivity, the signals are exposed by a limited connection-interface as a public readonly member variable (the actual signals are still private). For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument.
 
 ```typescript
 class Selection {
@@ -78,7 +139,7 @@ class Selection {
 }
 ```
 
-Signals and slots allows objects of arbitrary type communicate with each other at well-defined instants without type-coupling.
+The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at an arbitrary time (it is not possible to disconnect other connections without having the connection at hand). One can also use a combination of constructor-connectivity and public connectivity.
 
 ### Connections
 
