@@ -297,12 +297,10 @@ class Selection {
 
 After adding this dependency-information the user-interface views for the `Selection` class react properly to the changes in selection-state.
 
-Performance
------------
+Batch updates
+-------------
 
 What has been said above is already a working solution. What follows are a few additional notes on performance.
-
-### Batch updates
 
 With batch updates it is often desirable to replace the communication of many small related state-changes, such as `edgeRemoved`, with a communication of a single big state-change, such as `allEdgesRemoved`. This is because every emit of a signal causes an immediate communication to other objects and also causes `MobX` to update the relevant `React` components.
 
