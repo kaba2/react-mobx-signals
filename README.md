@@ -126,45 +126,33 @@ We have adopted constructor-connectivity in this example demonstration.
 With public connectivity, the signals are exposed by a limited connection-interface as a public readonly member variable (the actual signals are still private). For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument.
 
 ```typescript
-class Selection {
-	private _vertices = new Set<Vertex>();
+class Mesh {
+	...
 	private _vertexAdded = new Signal<(vertex: Vertex) => void>();
 	public readonly vertexAdded = connectable(this._vertexAdded);
 	...
 	public addVertex(vertex: Vertex) {
-		this._vertices.add(vertex);
+		...
 		this._vertexAdded.emit(vertex);
 	}
 	...
 }
 ```
 
-The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at an arbitrary time (it is not possible to disconnect other connections without having the connection at hand). One can also use a combination of constructor-connectivity and public connectivity.
+Connections would then be formed like this:
+
+```typescript
+const mesh = new Mesh(); 
+mesh.vertexAdded.connect((vertex: Vertex) => {console.log('Vertex added!');});
+```
+
+The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at any time. One can also use a combination of constructor-connectivity and public connectivity.
 
 ### Connections
 
-Who creates the connections between signals and slots? The most typical situation is that each object `A` has a parent object `B` which creates and owns `A`. The parent object `B` connects `A`'s signals to other objects's slots upon creation; and often it is either to `B`'s own private slot or to a slot of `B`'s another child-object. The connections usually remain static through the lifetime of the object `A`, and are disconnected by `B` only when `A` is removed from the parent `B`. This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is deleted: the parent connects and disconnects its children during their creation and removal, respectively. 
+Who creates the connections between signals and slots? The most typical situation is that each object `A` has a parent object `B` which creates and owns `A`. The parent object `B` connects `A`'s signals to other objects's slots upon creation; and often it is either to `B`'s own private slot or to a slot of `B`'s another child-object. The connections usually remain static through the lifetime of the object `A`, and are disconnected by `B` only when `A` is removed from the parent `B`. The constructor-connectivity section provides an example if this situation.
 
-```typescript
-class Project {
-	private _selection = new Selection();
-	private _meshAdded = new Signal<(mesh: Mesh) => void>();
-	public readonly meshAdded = connectable(this._meshAdded);
-	private _meshes = new Set<Mesh>();
-	...
-	public addMesh(): Mesh {
-		const mesh = new Mesh();
-		mesh.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
-		this._meshes.add(mesh);
-		this._meshAdded.emit(mesh);
-		return mesh;
-	}
-	...
-	private onVertexToBeRemoved = (vertex: Vertex) => {
-		this._selection.remove(vertex);
-	}
-}
-``` 
+This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is deleted: the parent connects and disconnects its children during their creation and removal, respectively. 
 
 ### Aggregation
 
