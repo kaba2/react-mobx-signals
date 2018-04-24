@@ -112,8 +112,8 @@ export class Mesh {
 	private _edges = new Set<Edge>();
 	private _signals = new MeshSignals();
 
-	readonly _vertexRemoved = new Signal<() => void>();
-	readonly _edgeRemoved = new Signal<() => void>();
+	private _vertexRemoved = new Signal<() => void>();
+	private _edgeRemoved = new Signal<() => void>();
 
 	public constructor(connectSignals = noSignals<MeshSignals>()) {
 		connectSignals(this._signals);
