@@ -155,6 +155,10 @@ Who creates the connections between signals and slots? The most typical situatio
 
 This typical situation answers the question of how signals and slots can possibly work in a language without deterministic object-destructors, where there is no way to disconnect an object when it is deleted: the parent connects and disconnects its children during their creation and removal, respectively. 
 
+### Aggregation
+
+Aggregation is a useful technique with signals and slots. Each slot in a connection can _return_ a value. An _aggregator_ object attaches to a signal, and observes, combines, and perhaps stores the connection-values, which it can then return as the result of the signal emittance process. The aggregate return type can differ from the slot return type. The aggregator can stop the emitting process based on its observed values. For example, a signal could be asking each object behind a slot to perform a given task. Once an object agrees to carry out that task, the emitting process is stopped.
+
 ### When to use signals
 
 An object probably should not define signals when...
@@ -166,10 +170,6 @@ An object probably should not define signals when...
 An object probably should define signals when...
 
 * .. it is not covered by previous rules (e.g. Project, Mesh, Selection).
-
-### Aggregation
-
-Aggregation is a useful technique with signals and slots. Each slot in a connection can _return_ a value. An _aggregator_ object attaches to a signal, and observes, combines, and perhaps stores the connection-values, which it can then return as the result of the signal emittance process. The aggregate return type can differ from the slot return type. The aggregator can stop the emitting process based on its observed values. For example, a signal could be asking each object behind a slot to perform a given task. Once an object agrees to carry out that task, the emitting process is stopped.
 
 ### Implementation
 
