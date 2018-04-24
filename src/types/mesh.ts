@@ -109,7 +109,7 @@ export class MeshSignals {
 	readonly edgeRemoved = new Signal<() => void>();
 	readonly toBeCleared = new Signal<(mesh: Mesh) => void>();
 	readonly cleared = new Signal<(mesh: Mesh) => void>();
-};
+}
 
 export class Mesh {
 	private _vertices = new Set<Vertex>();

@@ -5,7 +5,7 @@ import { renderMesh } from 'src/rendering/rendering';
 import * as Canvas from 'src/rendering/canvas';
 import Scene from 'src/types/scene';
 import Tool from 'src/tools/tool';
-import {Signal, dependsOn } from 'src/types/signal';
+import {Signal, dependsOn, noSignals } from 'src/types/signal';
 
 export class ProjectSignals {
 	readonly meshAdded = new Signal<(mesh: Mesh) => void>();
@@ -28,7 +28,7 @@ export default class Project {
 	private _tool?: Tool;
 	private _signals = new ProjectSignals();
 
-	public constructor(connectSignals: (signals: ProjectSignals) => void = ((signals: ProjectSignals) => {})) {
+	public constructor(connectSignals = noSignals<ProjectSignals>()) {
 		connectSignals(this._signals);
 		setInterval(this.render, 1000 / 60);
 	}
