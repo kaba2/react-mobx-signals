@@ -328,10 +328,6 @@ There are three ways to improve the performance of batch updates:
 
 3. Apply `MobX`'s `@action` decorator to the function. This disable updates to `MobX` for the duration of the batch-update, and updates `React` only after the function ends.
 
-### Polling
-
-Not all properties should be tracked with signals. For example, when the graph contains millions of vertices, then changes to the positions of the vertices should probably not be communicated with signals, but rather with some simple book-keeping ('has the position of any vertex in the graph changed?'), which can be reacted to later in aggregate by repeated polling --- such as from an event/render-loop.
-
 Summary
 -------
 
