@@ -10,13 +10,10 @@ import {Signal, dependsOn, noSignals } from 'src/types/signal';
 export class ProjectSignals {
 	readonly meshAdded = new Signal<(mesh: Mesh) => void>();
 	readonly meshToBeRemoved = new Signal<(mesh: Mesh) => void>();
-	readonly meshRemoved = new Signal<() => void>();
 	readonly selectionAdded = new Signal<(selection: Selection) => void>();
 	readonly selectionToBeRemoved = new Signal<(selection: Selection) => void>();
-	readonly selectionRemoved = new Signal<() => void>();
 	readonly sceneAdded = new Signal<(scene: Scene) => void>();
 	readonly sceneToBeRemoved = new Signal<(scene: Scene) => void>();
-	readonly sceneRemoved = new Signal<() => void>();
 	readonly toolWasSet = new Signal<(tool: Tool) => void>();
 }
 
@@ -27,6 +24,10 @@ export default class Project {
 	private _scene?: Scene;
 	private _tool?: Tool;
 	private _signals = new ProjectSignals();
+
+	private _meshRemoved = new Signal<() => void>();
+	private _sceneRemoved = new Signal<() => void>();
+	private _selectionRemoved = new Signal<() => void>();
 
 	public constructor(connectSignals = noSignals<ProjectSignals>()) {
 		connectSignals(this._signals);
@@ -65,7 +66,7 @@ export default class Project {
 	public removeScene(scene: Scene) {
 		this._signals.sceneToBeRemoved.emit(scene);
 		this._scenes.delete(scene);
-		this._signals.sceneRemoved.emit();
+		this._sceneRemoved.emit();
 	}
 
 	public scene(): Scene|undefined {
@@ -87,12 +88,12 @@ export default class Project {
 		this._signals.meshToBeRemoved.emit(mesh);
 		mesh.clear();
 		this._meshes.delete(mesh);
-		this._signals.meshRemoved.emit();
+		this._meshRemoved.emit();
 	}
 
 	public* meshes(): IterableIterator<Mesh> {
 		dependsOn(this._signals.meshAdded);
-		dependsOn(this._signals.meshRemoved);
+		dependsOn(this._meshRemoved);
 		yield* this._meshes;
 	}
 
@@ -107,12 +108,12 @@ export default class Project {
 	public removeSelection(selection: Selection) {
 		this._signals.selectionToBeRemoved.emit(selection);
 		this._selections.delete(selection);
-		this._signals.selectionRemoved.emit();
+		this._selectionRemoved.emit();
 	}
 
 	public* selections(): IterableIterator<Selection> {
 		dependsOn(this._signals.selectionAdded);
-		dependsOn(this._signals.selectionRemoved);
+		dependsOn(this._selectionRemoved);
 		yield* this._selections;
 	}
 

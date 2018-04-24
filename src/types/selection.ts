@@ -5,12 +5,10 @@ import {action} from 'mobx';
 export class SelectionSignals {
 	readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
 	readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
-	readonly vertexRemoved = new Signal<() => void>();
 	readonly verticesCleared = new Signal<() => void>();
 
 	readonly edgeAdded = new Signal<(edge: Edge) => void>();
 	readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
-	readonly edgeRemoved = new Signal<() => void>();
 	readonly edgesCleared = new Signal<() => void>();
 }
 
@@ -18,6 +16,9 @@ export default class Selection {
 	private _vertices = new Set<Vertex>();
 	private _edges = new Set<Edge>();
 	private _signals = new SelectionSignals();
+
+	private _vertexRemoved = new Signal<() => void>();
+	private _edgeRemoved = new Signal<() => void>();
 
 	public constructor(connectSignals = noSignals<SelectionSignals>()) {
 		connectSignals(this._signals);
@@ -52,13 +53,13 @@ export default class Selection {
 			this._signals.edgeToBeRemoved.emit(cell);
 			this._edges.delete(cell);
 			cell.setSelected(false);
-			this._signals.edgeRemoved.emit();
+			this._edgeRemoved.emit();
 		} else if (cell instanceof Vertex) {
 			console.log('<Selection.remove(Vertex)>');
 			this._signals.vertexToBeRemoved.emit(cell);
 			this._vertices.delete(cell);
 			cell.setSelected(false);
-			this._signals.vertexRemoved.emit();
+			this._vertexRemoved.emit();
 		}
 	}
 
@@ -99,13 +100,13 @@ export default class Selection {
 
 	private dependsOnVertexChanges() {
 		dependsOn(this._signals.vertexAdded);
-		dependsOn(this._signals.vertexRemoved);
+		dependsOn(this._vertexRemoved);
 		dependsOn(this._signals.verticesCleared);
 	}
 
 	private dependsOnEdgeChanges() {
 		dependsOn(this._signals.edgeAdded);
-		dependsOn(this._signals.edgeRemoved);
+		dependsOn(this._edgeRemoved);
 		dependsOn(this._signals.edgesCleared);
 	}
 
