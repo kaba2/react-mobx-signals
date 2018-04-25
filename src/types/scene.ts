@@ -7,6 +7,7 @@ import {Signal, noSignals} from 'src/types/signal';
 export class SceneSignals {
 	readonly modelAdded = new Signal<(model: Model) => void>();
 	readonly modelToBeRemoved = new Signal<(model: Model) => void>();
+	readonly modelRemoved = new Signal<() => void>();
 }
 
 export default class Scene {
@@ -15,6 +16,8 @@ export default class Scene {
 
 	public constructor(connectSignals = noSignals<SceneSignals>()) {
 		connectSignals(this._signals);
+		this._signals.modelAdded.connect(m => {console.log('Scene.modelAdded')});
+		this._signals.modelToBeRemoved.connect(m => {console.log('Scene.modelToBeRemoved')});
 	}
 
 	public addModel(mesh: Mesh): Model {
@@ -27,6 +30,7 @@ export default class Scene {
 	public removeModel(model: Model) {
 		this._signals.modelToBeRemoved.emit(model);
 		this._models.delete(model);
+		this._signals.modelRemoved.emit();
 	}
 
 	public pick(point: Vector2, accept: (cell: MeshCell) => boolean = cell => true): MeshCell|undefined {

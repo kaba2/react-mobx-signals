@@ -1,5 +1,5 @@
 import {Vector2} from 'three';
-import { Signal, dependsOn, noSignals } from 'src/types/signal';
+import { Signal, dependsOn, noSignals, batch } from 'src/types/signal';
 import Segment from 'src/geometry/segment';
 
 let globalEdgeId = 0;
@@ -101,8 +101,15 @@ export class Edge extends MeshCell {
 export class MeshSignals {
 	readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
 	readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	readonly vertexRemoved = new Signal<() => void>();
+
 	readonly edgeAdded = new Signal<(edge: Edge) => void>();
 	readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
+	readonly edgeRemoved = new Signal<() => void>();
+
+	readonly edgesToBeRemoved = new Signal<(edges: Array<Edge>) => void>();
+	readonly edgesRemoved = new Signal<() => void>();
+
 	readonly toBeCleared = new Signal<(mesh: Mesh) => void>();
 	readonly cleared = new Signal<(mesh: Mesh) => void>();
 }
@@ -112,11 +119,19 @@ export class Mesh {
 	private _edges = new Set<Edge>();
 	private _signals = new MeshSignals();
 
-	private _vertexRemoved = new Signal<() => void>();
-	private _edgeRemoved = new Signal<() => void>();
-
 	public constructor(connectSignals = noSignals<MeshSignals>()) {
 		connectSignals(this._signals);
+		this._signals.vertexAdded.connect(v => {console.log('Mesh.vertexAdded(' + v.name() + ')')});
+		this._signals.vertexToBeRemoved.connect(v => {console.log('Mesh.vertexToBeRemoved(' + v.name() + ')')});
+		this._signals.edgeAdded.connect(e => {console.log('Mesh.edgeAdded(' + e.name() + ')')});
+		this._signals.edgeToBeRemoved.connect(e => {console.log('Mesh.edgeToBeRemoved(' + e.name() + ')')});
+		this._signals.edgesToBeRemoved.connect(e => {console.log('Mesh.edgesToBeRemoved');});
+		this._signals.cleared.connect(m => {console.log('Mesh.cleared')});
+		this._signals.toBeCleared.connect(m => {console.log('Mesh.toBeCleared')});
+
+		this._signals.vertexRemoved.connect(() => {console.log('Mesh.vertexRemoved');});
+		this._signals.edgeRemoved.connect(() => {console.log('Mesh.edgeRemoved');});
+		this._signals.edgesRemoved.connect(() => {console.log('Mesh.edgesRemoved');});
 	}
 	
 	public clear() {
@@ -131,11 +146,9 @@ export class Mesh {
 	public disconnectAll() {
 		this._signals.vertexAdded.disconnectAll();
 		this._signals.vertexToBeRemoved.disconnectAll();
-		this._vertexRemoved.disconnectAll();
 
 		this._signals.edgeAdded.disconnectAll();
 		this._signals.edgeToBeRemoved.disconnectAll();
-		this._edgeRemoved.disconnectAll();
 	}
 
 	public get numVertices(): number {
@@ -149,19 +162,14 @@ export class Mesh {
 	}
 
 	public addVertex(): Vertex {
-		console.log('<Mesh.addVertex>');
-
 		const vertex = new Vertex();
 		this._vertices.add(vertex);
 		
 		this._signals.vertexAdded.emit(vertex);
-		console.log('<Mesh.addVertex/>');
 		return vertex;
 	}
 
 	public removeVertex(vertex: Vertex) {
-		console.log('<Mesh.removeVertex>');
-		
 		const edges = Array.from(vertex.edges());
 		for (const edge of edges) {
 			this.removeEdge(edge);
@@ -170,8 +178,7 @@ export class Mesh {
 		this._signals.vertexToBeRemoved.emit(vertex);
 
 		this._vertices.delete(vertex);
-		
-		console.log('<Mesh.removeVertex/>');
+		this._signals.vertexRemoved.emit();
 	}
 
 	public* vertices(): IterableIterator<Vertex> {
@@ -181,26 +188,31 @@ export class Mesh {
 	}
 
 	public addEdge(from: Vertex, to: Vertex): Edge {
-		console.log('<Mesh.addEdge>');
-
 		const edge = new Edge(from, to);
 		from._addEdge(edge);
 		to._addEdge(edge);
 		this._edges.add(edge);
 
 		this._signals.edgeAdded.emit(edge);
-		console.log('<Mesh.addEdge/>');
 		return edge;
 	}
 
-	public removeEdge (edge: Edge) {
-		console.log('<Mesh.removeEdge>');
-
+	public removeEdge(edge: Edge) {
 		this._signals.edgeToBeRemoved.emit(edge);
 		
 		this._edges.delete(edge);
-		
-		console.log('<Mesh.removeEdge/>');
+		this._signals.edgeRemoved.emit();
+	}
+
+	public removeEdges(edges: Iterable<Edge> = this.edges()) {
+		const _edges = Array.from(edges);
+		this._signals.edgesToBeRemoved.emit(_edges);
+		batch(() => {
+			for (const edge of _edges) {
+				this.removeEdge(edge);
+			}
+		}, [this._signals.edgeToBeRemoved, this._signals.edgeRemoved]);
+		this._signals.edgesRemoved.emit();
 	}
 
 	public* edges(): IterableIterator<Edge> {
@@ -211,13 +223,14 @@ export class Mesh {
 
 	private dependsOnVertexChanges() {
 		dependsOn(this._signals.vertexAdded);
-		dependsOn(this._vertexRemoved);
+		dependsOn(this._signals.vertexRemoved);
 		dependsOn(this._signals.cleared);
 	}
 
 	private dependsOnEdgeChanges() {
 		dependsOn(this._signals.edgeAdded);
-		dependsOn(this._edgeRemoved);
+		dependsOn(this._signals.edgeRemoved);
+		dependsOn(this._signals.edgesRemoved);
 		dependsOn(this._signals.cleared);
 	}
 }

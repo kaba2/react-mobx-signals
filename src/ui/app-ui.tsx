@@ -52,11 +52,8 @@ class AppUi extends React.Component<AppProps, AppState> {
   }
 
 	public onKeyPress(keyboard: React.KeyboardEvent<{}>) {
-		console.log('event!', keyboard.key);
 		if (keyboard.key == 'd') {
-      for (const edge of Array.from(selection.edges())) {
-        mesh.removeEdge(edge);
-      }
+			mesh.removeEdges(selection.edges());
       for (const vertex of Array.from(selection.vertices())) {
         mesh.removeVertex(vertex);
 			}

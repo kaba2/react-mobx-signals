@@ -19,7 +19,7 @@ export function dependsOn(...signals : Dependable[]) {
 export function batch(work: () => void, signals: Enablable[]) {
     const previous: boolean[] = [];
     for (const signal of signals) {
-        previous.push(signal.enable(false));
+        previous.push(signal.disable());
     }
     work();
     for (let i = 0;i < signals.length;++i) {

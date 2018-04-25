@@ -5,10 +5,12 @@ import {action} from 'mobx';
 export class SelectionSignals {
 	readonly vertexAdded = new Signal<(vertex: Vertex) => void>();
 	readonly vertexToBeRemoved = new Signal<(vertex: Vertex) => void>();
+	readonly vertexRemoved = new Signal<() => void>();
 	readonly verticesCleared = new Signal<() => void>();
 
 	readonly edgeAdded = new Signal<(edge: Edge) => void>();
 	readonly edgeToBeRemoved = new Signal<(edge: Edge) => void>();
+	readonly edgeRemoved = new Signal<() => void>();
 	readonly edgesCleared = new Signal<() => void>();
 }
 
@@ -17,11 +19,18 @@ export default class Selection {
 	private _edges = new Set<Edge>();
 	private _signals = new SelectionSignals();
 
-	private _vertexRemoved = new Signal<() => void>();
-	private _edgeRemoved = new Signal<() => void>();
-
 	public constructor(connectSignals = noSignals<SelectionSignals>()) {
 		connectSignals(this._signals);
+		this._signals.vertexAdded.connect(v => {console.log('Selection.vertexAdded');});
+		this._signals.vertexToBeRemoved.connect(v => {console.log('Selection.vertexToBeRemoved');});
+		this._signals.vertexRemoved.connect(() => {console.log('Selection._vertexRemoved')});
+
+		this._signals.edgeAdded.connect(e => {console.log('Selection.edgeAdded');});
+		this._signals.edgeToBeRemoved.connect(e => {console.log('Selection.edgeToBeRemoved');});
+		this._signals.edgeRemoved.connect(() => {console.log('Selection._edgeRemoved')});
+
+		this._signals.verticesCleared.connect(() => {console.log('Selection.verticesCleared')});
+		this._signals.edgesCleared.connect(() => {console.log('Selection.edgesCleared')});
 	}
 	
 	public* vertices(): IterableIterator<Vertex> {
@@ -35,7 +44,6 @@ export default class Selection {
 	}
 
 	public add(cell: MeshCell) {
-		console.log('<Selection.add>');
 		if (cell instanceof Edge) {
 			this._edges.add(cell);
 			cell.setSelected(true);
@@ -49,17 +57,15 @@ export default class Selection {
 
 	public remove(cell: MeshCell) {
 		if (cell instanceof Edge) {
-			console.log('<Selection.remove(Edge)>');
 			this._signals.edgeToBeRemoved.emit(cell);
 			this._edges.delete(cell);
 			cell.setSelected(false);
-			this._edgeRemoved.emit();
+			this._signals.edgeRemoved.emit();
 		} else if (cell instanceof Vertex) {
-			console.log('<Selection.remove(Vertex)>');
 			this._signals.vertexToBeRemoved.emit(cell);
 			this._vertices.delete(cell);
 			cell.setSelected(false);
-			this._vertexRemoved.emit();
+			this._signals.vertexRemoved.emit();
 		}
 	}
 
@@ -99,15 +105,17 @@ export default class Selection {
 	}
 
 	private dependsOnVertexChanges() {
-		dependsOn(this._signals.vertexAdded);
-		dependsOn(this._vertexRemoved);
-		dependsOn(this._signals.verticesCleared);
+		dependsOn(
+			this._signals.vertexAdded,
+			this._signals.vertexRemoved,
+			this._signals.verticesCleared);
 	}
 
 	private dependsOnEdgeChanges() {
-		dependsOn(this._signals.edgeAdded);
-		dependsOn(this._edgeRemoved);
-		dependsOn(this._signals.edgesCleared);
+		dependsOn(
+			this._signals.edgeAdded, 
+			this._signals.edgeRemoved, 
+			this._signals.edgesCleared);
 	}
 
 	private dependsOnChanges() {
