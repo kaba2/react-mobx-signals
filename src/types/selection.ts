@@ -23,11 +23,11 @@ export default class Selection {
 		connectSignals(this._signals);
 		this._signals.vertexAdded.connect(v => {console.log('Selection.vertexAdded');});
 		this._signals.vertexToBeRemoved.connect(v => {console.log('Selection.vertexToBeRemoved');});
-		this._signals.vertexRemoved.connect(() => {console.log('Selection._vertexRemoved')});
+		this._signals.vertexRemoved.connect(() => {console.log('Selection.vertexRemoved')});
 
 		this._signals.edgeAdded.connect(e => {console.log('Selection.edgeAdded');});
 		this._signals.edgeToBeRemoved.connect(e => {console.log('Selection.edgeToBeRemoved');});
-		this._signals.edgeRemoved.connect(() => {console.log('Selection._edgeRemoved')});
+		this._signals.edgeRemoved.connect(() => {console.log('Selection.edgeRemoved')});
 
 		this._signals.verticesCleared.connect(() => {console.log('Selection.verticesCleared')});
 		this._signals.edgesCleared.connect(() => {console.log('Selection.edgesCleared')});
