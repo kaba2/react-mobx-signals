@@ -66,7 +66,7 @@ An object defines a set of signals which usually correspond to either a beginnin
 
 ### Constructor-connectivity
 
-With constructor-connectivity, whoever constructs the object provides a callback as a constructor argument. The callback takes in the object's private signals, and connects them to slots. After the constructor, there is no way to reconnect the signals from outside the object.
+With constructor-connectivity, whoever constructs the object provides a callback as a constructor argument. The callback takes in the object's private signals, and connects them to slots. After the constructor, there is no way to reconnect the signals from outside the object. For example, just before removing a vertex from a graph, one could emit a signal called `vertexToBeRemoved(vertex)`, where the removed vertex is provided as an argument.
 
 ```typescript
 type ConnectSignals<T> = (signals: T) => void;
@@ -123,7 +123,7 @@ We have adopted constructor-connectivity in this example demonstration.
 
 ### Public connectitivity
 
-With public connectivity, the signals are exposed by a limited connection-interface as a public readonly member variable (the actual signals are still private). For example, a selection of vertices and edges could emit a signal called `vertexAdded(vertex)` after adding a vertex into the selection, where the added vertex is provided as an argument.
+With public connectivity, the signals are exposed by a limited connection-interface as a public readonly member variable (the actual signals are still private). 
 
 ```typescript
 class Mesh {
@@ -143,11 +143,22 @@ class Mesh {
 Connections would then be formed like this:
 
 ```typescript
-const mesh = new Mesh(); 
-mesh.vertexToBeRemoved.connect((vertex: Vertex) => {console.log('Vertex is to be removed!');});
+class Project {
+	...
+	public addMesh(): Mesh {
+		const mesh = new Mesh(); 
+		mesh.vertexToBeRemoved.connect(this.onVertexToBeRemoved);
+		...
+	}	
+	...
+	private onVertexToBeRemoved = (vertex: Vertex) => {
+		...
+	}
+	...
+}
 ```
 
-The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at any time. One can also use a combination of constructor-connectivity and public connectivity.
+The difference to constructor-connectivity is that with public connectivity one can connect to and disconnect from a signal at any time and from anywhere. One can also use a combination of constructor-connectivity and public connectivity.
 
 ### Connections
 
